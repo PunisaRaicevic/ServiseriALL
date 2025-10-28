@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
 import TaskCard from "@/components/TaskCard";
 import AddApplianceDialog from "@/components/AddApplianceDialog";
+import AddClientDialog from "@/components/AddClientDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -25,6 +26,7 @@ export default function TasksPage() {
   const [taskTypeFilter, setTaskTypeFilter] = useState<string>("all");
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [isAddApplianceOpen, setIsAddApplianceOpen] = useState(false);
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false);
   const { toast} = useToast();
   
   const [taskType, setTaskType] = useState<"one-time" | "recurring">("one-time");
@@ -201,7 +203,13 @@ export default function TasksPage() {
                     <Label htmlFor="task-client">
                       Client <span className="text-destructive">*</span>
                     </Label>
-                    <Select value={clientId} onValueChange={setClientId}>
+                    <Select value={clientId} onValueChange={(value) => {
+                      if (value === "add-new") {
+                        setIsAddClientOpen(true);
+                      } else {
+                        setClientId(value);
+                      }
+                    }}>
                       <SelectTrigger id="task-client" data-testid="select-task-client">
                         <SelectValue placeholder="Select client" />
                       </SelectTrigger>
@@ -209,6 +217,12 @@ export default function TasksPage() {
                         {clients.map(client => (
                           <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
                         ))}
+                        <SelectItem value="add-new" className="text-primary font-medium">
+                          <div className="flex items-center gap-2">
+                            <Plus className="w-4 h-4" />
+                            Add new client
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -444,6 +458,15 @@ export default function TasksPage() {
         onSuccess={(newApplianceId) => {
           queryClient.invalidateQueries({ queryKey: ["/api/appliances"] });
           setApplianceId(newApplianceId);
+        }}
+      />
+
+      <AddClientDialog
+        open={isAddClientOpen}
+        onOpenChange={setIsAddClientOpen}
+        onSuccess={(newClientId) => {
+          queryClient.invalidateQueries({ queryKey: ["/api/clients"] });
+          setClientId(newClientId);
         }}
       />
     </div>

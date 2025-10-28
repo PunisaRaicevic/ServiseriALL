@@ -120,15 +120,16 @@ export default function AddApplianceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Add New Appliance</DialogTitle>
           <DialogDescription>
             Create a new appliance for the selected client
           </DialogDescription>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
+        <div className="overflow-y-auto flex-1 -mx-6 px-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
             <FormField
               control={form.control}
               name="maker"
@@ -302,6 +303,7 @@ export default function AddApplianceDialog({
             </div>
           </form>
         </Form>
+        </div>
       </DialogContent>
     </Dialog>
   );
