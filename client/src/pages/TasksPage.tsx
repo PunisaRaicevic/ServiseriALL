@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Search, Repeat, Plus } from "lucide-react";
 import { useLocation } from "wouter";
@@ -17,12 +18,14 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Client, Appliance, User, Task } from "@shared/schema";
 import { generateUpcomingDates, getRecurrencePatternLabel, type RecurrencePattern } from "@/lib/recurringUtils";
+import { startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
 
 export default function TasksPage() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("active");
   const [taskTypeFilter, setTaskTypeFilter] = useState<string>("all");
+  const [showCompleted, setShowCompleted] = useState(false);
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
   const [isAddApplianceOpen, setIsAddApplianceOpen] = useState(false);
   const { toast} = useToast();
@@ -117,13 +120,44 @@ export default function TasksPage() {
     ? generateUpcomingDates(new Date(dueDate), recurrencePattern, recurrenceInterval, 5)
     : [];
   
+  const isTaskInCurrentWeek = (task: Task) => {
+    if (task.taskType !== "recurring" || !task.nextOccurrenceDate) {
+      return true;
+    }
+    
+    const now = new Date();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+    
+    try {
+      const nextDate = typeof task.nextOccurrenceDate === 'string' 
+        ? parseISO(task.nextOccurrenceDate)
+        : new Date(task.nextOccurrenceDate);
+      
+      return isWithinInterval(nextDate, { start: weekStart, end: weekEnd });
+    } catch (error) {
+      return true;
+    }
+  };
+
   const filteredTasks = tasks.filter((task) => {
     const client = clients.find(c => c.id === task.clientId);
     const matchesSearch = task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (client?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
-    const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+    
+    const matchesStatus = statusFilter === "active" 
+      ? (task.status === "pending" || task.status === "in_progress")
+      : (statusFilter === "all" || task.status === statusFilter);
+    
     const matchesType = taskTypeFilter === "all" || task.taskType === taskTypeFilter;
-    return matchesSearch && matchesStatus && matchesType;
+    
+    const matchesCompletedFilter = showCompleted || task.status !== "completed";
+    
+    const matchesWeekFilter = task.taskType === "recurring" 
+      ? isTaskInCurrentWeek(task) || task.status === "in_progress"
+      : true;
+    
+    return matchesSearch && matchesStatus && matchesType && matchesCompletedFilter && matchesWeekFilter;
   });
 
   return (
@@ -358,39 +392,54 @@ export default function TasksPage() {
           </Dialog>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search tasks or clients..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-              data-testid="input-search-tasks"
-            />
+        <div className="space-y-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search tasks or clients..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                data-testid="input-search-tasks"
+              />
+            </div>
+            <Select value={taskTypeFilter} onValueChange={setTaskTypeFilter}>
+              <SelectTrigger className="w-full sm:w-48" data-testid="select-type-filter">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="one-time">One-time</SelectItem>
+                <SelectItem value="recurring">Recurring</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-48" data-testid="select-status-filter">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active Only</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <Select value={taskTypeFilter} onValueChange={setTaskTypeFilter}>
-            <SelectTrigger className="w-full sm:w-48" data-testid="select-type-filter">
-              <SelectValue placeholder="Filter by type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="one-time">One-time</SelectItem>
-              <SelectItem value="recurring">Recurring</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-48" data-testid="select-status-filter">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="in_progress">In Progress</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
+          
+          <div className="flex items-center gap-2">
+            <Checkbox 
+              id="show-completed" 
+              checked={showCompleted}
+              onCheckedChange={(checked) => setShowCompleted(checked === true)}
+              data-testid="checkbox-show-completed"
+            />
+            <Label htmlFor="show-completed" className="text-sm font-normal cursor-pointer">
+              Show completed tasks
+            </Label>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
