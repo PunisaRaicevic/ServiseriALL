@@ -5,6 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
+import { useTranslation } from "@/i18n";
+import { LanguageSelector } from "@/components/LanguageSelector";
 import tehnikoLogo from "@assets/ChatGPT Image Oct 28, 2025, 11_42_45 AM_1761649167166.png";
 
 export default function LoginPage() {
@@ -12,6 +14,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const t = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +30,7 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const error = await response.json();
-        alert(error.message || 'Login failed');
+        alert(error.message || t.auth.loginError);
         setIsLoading(false);
         return;
       }
@@ -36,7 +39,7 @@ export default function LoginPage() {
       setLocation('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      alert('Login failed. Please try again.');
+      alert(t.auth.loginError);
       setIsLoading(false);
     }
   };
@@ -44,11 +47,14 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        <div className="absolute top-4 right-4">
+          <LanguageSelector />
+        </div>
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-6">
             <img 
               src={tehnikoLogo} 
-              alt="Tehniko System - Budva Montenegro" 
+              alt={`${t.auth.appTitle} - ${t.auth.appSubtitle}`}
               className="w-full max-w-md h-auto"
               data-testid="img-logo"
             />
@@ -61,11 +67,11 @@ export default function LoginPage() {
         <Card className="p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Username or Email</Label>
+              <Label htmlFor="username">{t.auth.username}</Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter your username"
+                placeholder={t.auth.username}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -74,11 +80,11 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t.auth.password}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t.auth.password}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -92,7 +98,7 @@ export default function LoginPage() {
               disabled={isLoading}
               data-testid="button-login"
             >
-              {isLoading ? "Signing in..." : "Sign In"}
+              {isLoading ? `${t.auth.loginButton}...` : t.auth.loginButton}
             </Button>
           </form>
         </Card>
