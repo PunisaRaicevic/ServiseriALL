@@ -1,12 +1,16 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
+import AddApplianceDialog from "@/components/AddApplianceDialog";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Package, FileText, History, Upload } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Package, FileText, History, Upload, Wrench, Plus } from "lucide-react";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import type { Appliance, Client } from "@shared/schema";
 import { format } from "date-fns";
 
 //todo: remove mock functionality
@@ -92,6 +96,16 @@ const mockHistory = [
 export default function StoragePage() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("parts");
+  const [isAddApplianceOpen, setIsAddApplianceOpen] = useState(false);
+  const [selectedClientId, setSelectedClientId] = useState("");
+
+  const { data: appliances = [] } = useQuery<Appliance[]>({
+    queryKey: ["/api/appliances"],
+  });
+
+  const { data: clients = [] } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -105,10 +119,14 @@ export default function StoragePage() {
         <h2 className="text-3xl font-bold mb-6">Storage</h2>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="parts" data-testid="tab-parts" className="gap-2">
               <Package className="h-4 w-4" />
               Spare Parts
+            </TabsTrigger>
+            <TabsTrigger value="appliances" data-testid="tab-appliances" className="gap-2">
+              <Wrench className="h-4 w-4" />
+              Appliances
             </TabsTrigger>
             <TabsTrigger value="documents" data-testid="tab-documents" className="gap-2">
               <FileText className="h-4 w-4" />
@@ -143,6 +161,80 @@ export default function StoragePage() {
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="appliances" className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                <SelectTrigger className="w-full sm:w-64" data-testid="select-storage-client-filter">
+                  <SelectValue placeholder="Filter by client" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Clients</SelectItem>
+                  {clients.map(client => (
+                    <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={() => setIsAddApplianceOpen(true)}
+                disabled={!selectedClientId || selectedClientId === "all"}
+                data-testid="button-add-appliance-storage"
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add New Appliance
+              </Button>
+            </div>
+
+            {(() => {
+              const filteredAppliances = appliances.filter(appliance => 
+                selectedClientId === "all" || !selectedClientId || appliance.clientId === selectedClientId
+              );
+
+              if (filteredAppliances.length === 0) {
+                return (
+                  <div className="text-center py-12 text-muted-foreground">
+                    {appliances.length === 0
+                      ? "No appliances found. Select a client and add one to get started."
+                      : selectedClientId && selectedClientId !== "all"
+                        ? "No appliances found for the selected client."
+                        : "No appliances found."}
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredAppliances.map((appliance) => {
+                    const client = clients.find(c => c.id === appliance.clientId);
+                    return (
+                      <Card key={appliance.id} className="p-5" data-testid={`card-appliance-${appliance.id}`}>
+                        <div className="mb-3">
+                          <h3 className="font-medium text-lg mb-1">{appliance.name}</h3>
+                          <p className="text-sm text-primary">{client?.name}</p>
+                        </div>
+                        {appliance.model && (
+                          <p className="text-sm text-muted-foreground mb-1">
+                            <span className="font-medium">Model:</span> {appliance.model}
+                          </p>
+                        )}
+                        {appliance.serialNumber && (
+                          <p className="text-sm text-muted-foreground mb-1">
+                            <span className="font-medium">S/N:</span> {appliance.serialNumber}
+                          </p>
+                        )}
+                        {appliance.location && (
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-medium">Location:</span> {appliance.location}
+                          </p>
+                        )}
+                      </Card>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </TabsContent>
 
           <TabsContent value="documents" className="space-y-4">
@@ -207,6 +299,15 @@ export default function StoragePage() {
           </TabsContent>
         </Tabs>
       </main>
+
+      <AddApplianceDialog
+        open={isAddApplianceOpen}
+        onOpenChange={setIsAddApplianceOpen}
+        clientId={selectedClientId === "all" ? "" : selectedClientId}
+        onSuccess={() => {
+          setSelectedClientId("");
+        }}
+      />
     </div>
   );
 }

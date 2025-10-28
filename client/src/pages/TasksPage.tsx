@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
 import TaskCard from "@/components/TaskCard";
+import AddApplianceDialog from "@/components/AddApplianceDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { Search, Repeat } from "lucide-react";
+import { Search, Repeat, Plus } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -62,7 +63,8 @@ export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [taskTypeFilter, setTaskTypeFilter] = useState<string>("all");
   const [isAddTaskOpen, setIsAddTaskOpen] = useState(false);
-  const { toast } = useToast();
+  const [isAddApplianceOpen, setIsAddApplianceOpen] = useState(false);
+  const { toast} = useToast();
   
   const [taskType, setTaskType] = useState<"one-time" | "recurring">("one-time");
   const [clientId, setClientId] = useState("");
@@ -224,7 +226,13 @@ export default function TasksPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="task-appliance">Appliance</Label>
-                    <Select value={applianceId} onValueChange={setApplianceId} disabled={!clientId}>
+                    <Select value={applianceId} onValueChange={(value) => {
+                      if (value === "add-new") {
+                        setIsAddApplianceOpen(true);
+                      } else {
+                        setApplianceId(value);
+                      }
+                    }} disabled={!clientId}>
                       <SelectTrigger id="task-appliance" data-testid="select-task-appliance">
                         <SelectValue placeholder={clientId ? "Select appliance" : "Select client first"} />
                       </SelectTrigger>
@@ -232,6 +240,14 @@ export default function TasksPage() {
                         {filteredAppliances.map(appliance => (
                           <SelectItem key={appliance.id} value={appliance.id}>{appliance.name}</SelectItem>
                         ))}
+                        {clientId && (
+                          <SelectItem value="add-new" className="text-primary font-medium">
+                            <div className="flex items-center gap-2">
+                              <Plus className="w-4 h-4" />
+                              Add new appliance
+                            </div>
+                          </SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -438,6 +454,15 @@ export default function TasksPage() {
           </div>
         )}
       </main>
+
+      <AddApplianceDialog
+        open={isAddApplianceOpen}
+        onOpenChange={setIsAddApplianceOpen}
+        clientId={clientId}
+        onSuccess={(newApplianceId) => {
+          setApplianceId(newApplianceId);
+        }}
+      />
     </div>
   );
 }
