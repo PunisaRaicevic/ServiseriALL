@@ -238,7 +238,9 @@ export default function TasksPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {filteredAppliances.map(appliance => (
-                          <SelectItem key={appliance.id} value={appliance.id}>{appliance.name}</SelectItem>
+                          <SelectItem key={appliance.id} value={appliance.id}>
+                            {[appliance.maker, appliance.type, appliance.model].filter(Boolean).join(' - ') || `Appliance ${appliance.id.slice(0, 8)}`}
+                          </SelectItem>
                         ))}
                         {clientId && (
                           <SelectItem value="add-new" className="text-primary font-medium">
@@ -460,6 +462,7 @@ export default function TasksPage() {
         onOpenChange={setIsAddApplianceOpen}
         clientId={clientId}
         onSuccess={(newApplianceId) => {
+          queryClient.invalidateQueries({ queryKey: ["/api/appliances"] });
           setApplianceId(newApplianceId);
         }}
       />
