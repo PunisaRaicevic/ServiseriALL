@@ -20,9 +20,11 @@ interface AddApplianceDialogProps {
 }
 
 const applianceFormSchema = insertApplianceSchema.extend({
+  maker: z.string().optional(),
+  type: z.string().optional(),
   model: z.string().optional(),
-  serialNumber: z.string().optional(),
-  location: z.string().optional(),
+  serial: z.string().optional(),
+  iga: z.string().optional(),
   installDate: z.string().optional(),
 });
 
@@ -40,10 +42,11 @@ export default function AddApplianceDialog({
     resolver: zodResolver(applianceFormSchema),
     defaultValues: {
       clientId: clientId || "",
-      name: "",
+      maker: "",
+      type: "",
       model: "",
-      serialNumber: "",
-      location: "",
+      serial: "",
+      iga: "",
       installDate: "",
     },
   });
@@ -98,10 +101,11 @@ export default function AddApplianceDialog({
 
     const applianceData: InsertAppliance = {
       clientId: values.clientId,
-      name: values.name,
+      maker: values.maker || null,
+      type: values.type || null,
       model: values.model || null,
-      serialNumber: values.serialNumber || null,
-      location: values.location || null,
+      serial: values.serial || null,
+      iga: values.iga || null,
       installDate: values.installDate || null,
     };
 
@@ -121,16 +125,32 @@ export default function AddApplianceDialog({
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-4">
             <FormField
               control={form.control}
-              name="name"
+              name="maker"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Appliance Name <span className="text-destructive">*</span>
-                  </FormLabel>
+                  <FormLabel>Maker</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., Commercial Freezer Unit"
-                      data-testid="input-appliance-name"
+                      placeholder="e.g., Samsung, LG, Siemens"
+                      data-testid="input-appliance-maker"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g., Freezer, Oven, Dishwasher"
+                      data-testid="input-appliance-type"
                       {...field}
                     />
                   </FormControl>
@@ -159,7 +179,7 @@ export default function AddApplianceDialog({
 
             <FormField
               control={form.control}
-              name="serialNumber"
+              name="serial"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Serial Number</FormLabel>
@@ -177,14 +197,14 @@ export default function AddApplianceDialog({
 
             <FormField
               control={form.control}
-              name="location"
+              name="iga"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Location</FormLabel>
+                  <FormLabel>IGA Number</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., Kitchen, Basement"
-                      data-testid="input-appliance-location"
+                      placeholder="e.g., IGA-123456"
+                      data-testid="input-appliance-iga"
                       {...field}
                     />
                   </FormControl>
