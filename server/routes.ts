@@ -1,10 +1,30 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertClientSchema, insertApplianceSchema, insertTaskSchema, insertReportSchema } from "@shared/schema";
-import { generateRecurringTasks } from "./recurringTasksService";
+import { 
+  insertClientSchema, 
+  insertApplianceSchema, 
+  insertTaskSchema, 
+  insertReportSchema,
+  insertDocumentSchema,
+  insertSparePartSchema 
+} from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Users/Profiles
+  app.get("/api/users", async (req, res) => {
+    const users = await storage.getAllUsers();
+    res.json(users);
+  });
+
+  app.get("/api/users/:id", async (req, res) => {
+    const user = await storage.getUser(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  });
+
   // Clients
   app.get("/api/clients", async (req, res) => {
     const clients = await storage.getAllClients();
@@ -114,16 +134,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/tasks", async (req, res) => {
     try {
       const validatedData = insertTaskSchema.parse(req.body);
-      
-      if (validatedData.taskType === "recurring" && validatedData.dueDate && validatedData.recurrencePattern && validatedData.recurrencePattern !== "none") {
-        const { calculateNextOccurrenceDate } = await import("./recurringTasksService");
-        validatedData.nextOccurrenceDate = calculateNextOccurrenceDate(
-          validatedData.dueDate as string,
-          validatedData.recurrencePattern as string,
-          validatedData.recurrenceInterval || 1
-        );
-      }
-      
       const task = await storage.createTask(validatedData);
       res.status(201).json(task);
     } catch (error: any) {
@@ -142,22 +152,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/tasks/:id", async (req, res) => {
     await storage.deleteTask(req.params.id);
     res.status(204).send();
-  });
-
-  // Recurring tasks endpoint
-  app.get("/api/tasks/recurring/due", async (req, res) => {
-    const tasks = await storage.getRecurringTasksDue();
-    res.json(tasks);
-  });
-
-  // Generate recurring tasks
-  app.post("/api/tasks/recurring/generate", async (req, res) => {
-    try {
-      const result = await generateRecurringTasks();
-      res.json(result);
-    } catch (error: any) {
-      res.status(500).json({ message: error.message });
-    }
   });
 
   // Reports
@@ -184,24 +178,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Files
-  app.get("/api/tasks/:taskId/files", async (req, res) => {
-    const files = await storage.getFilesByTask(req.params.taskId);
-    res.json(files);
+  // Documents
+  app.get("/api/documents", async (req, res) => {
+    const documents = await storage.getAllDocuments();
+    res.json(documents);
   });
 
-  app.get("/api/reports/:reportId/files", async (req, res) => {
-    const files = await storage.getFilesByReport(req.params.reportId);
-    res.json(files);
+  app.get("/api/documents/:id", async (req, res) => {
+    const document = await storage.getDocument(req.params.id);
+    if (!document) {
+      return res.status(404).json({ message: "Document not found" });
+    }
+    res.json(document);
   });
 
-  // Users
-  app.get("/api/users", async (req, res) => {
-    const users = await storage.getAllUsers();
-    res.json(users);
+  app.post("/api/documents", async (req, res) => {
+    try {
+      const validatedData = insertDocumentSchema.parse(req.body);
+      const document = await storage.createDocument(validatedData);
+      res.status(201).json(document);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.delete("/api/documents/:id", async (req, res) => {
+    await storage.deleteDocument(req.params.id);
+    res.status(204).send();
+  });
+
+  // Spare Parts
+  app.get("/api/spare-parts", async (req, res) => {
+    const spareParts = await storage.getAllSpareParts();
+    res.json(spareParts);
+  });
+
+  app.get("/api/spare-parts/:id", async (req, res) => {
+    const sparePart = await storage.getSparePart(req.params.id);
+    if (!sparePart) {
+      return res.status(404).json({ message: "Spare part not found" });
+    }
+    res.json(sparePart);
+  });
+
+  app.post("/api/spare-parts", async (req, res) => {
+    try {
+      const validatedData = insertSparePartSchema.parse(req.body);
+      const sparePart = await storage.createSparePart(validatedData);
+      res.status(201).json(sparePart);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.patch("/api/spare-parts/:id", async (req, res) => {
+    const sparePart = await storage.updateSparePart(req.params.id, req.body);
+    if (!sparePart) {
+      return res.status(404).json({ message: "Spare part not found" });
+    }
+    res.json(sparePart);
+  });
+
+  app.delete("/api/spare-parts/:id", async (req, res) => {
+    await storage.deleteSparePart(req.params.id);
+    res.status(204).send();
   });
 
   const httpServer = createServer(app);
-
   return httpServer;
 }

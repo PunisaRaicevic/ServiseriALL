@@ -33,23 +33,6 @@ function Router() {
 }
 
 function App() {
-  useEffect(() => {
-    const checkAndGenerateRecurringTasks = async () => {
-      try {
-        await apiRequest("POST", "/api/tasks/recurring/generate");
-        queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
-      } catch (error) {
-        console.error("Failed to generate recurring tasks:", error);
-      }
-    };
-
-    checkAndGenerateRecurringTasks();
-    
-    const interval = setInterval(checkAndGenerateRecurringTasks, 24 * 60 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
