@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 import tehnikoLogo from "@assets/ChatGPT Image Oct 28, 2025, 11_42_45 AM_1761649167166.png";
 
 export default function LoginPage() {
@@ -31,6 +32,7 @@ export default function LoginPage() {
         return;
       }
 
+      await queryClient.invalidateQueries({ queryKey: ["/api/user/me"] });
       setLocation('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
