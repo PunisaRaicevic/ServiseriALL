@@ -178,6 +178,7 @@ export const en = {
       yearly: 'Yearly',
     },
     intervalUnits: {
+      minutes: 'minutes',
       weeks: 'weeks',
       months: 'months',
       quarters: '6 months',

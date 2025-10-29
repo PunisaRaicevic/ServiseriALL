@@ -178,6 +178,7 @@ export const sr = {
       yearly: 'Godišnje',
     },
     intervalUnits: {
+      minutes: 'minuta',
       weeks: 'nedelje',
       months: 'meseci',
       quarters: '6 meseci',

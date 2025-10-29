@@ -174,7 +174,15 @@ export default function TaskDetailsPage() {
             </h3>
             {appliance ? (
               <div className="space-y-3">
-                <div>
+                <div className="flex items-center gap-3">
+                  {appliance.picture && (
+                    <img
+                      src={appliance.picture}
+                      alt={applianceLabel}
+                      className="w-16 h-16 rounded-md object-cover flex-shrink-0"
+                      data-testid="img-appliance-thumbnail"
+                    />
+                  )}
                   <p className="font-medium text-lg" data-testid="text-appliance-name">{applianceLabel}</p>
                 </div>
                 {appliance.maker && (
@@ -220,22 +228,30 @@ export default function TaskDetailsPage() {
           <h3 className="text-sm uppercase tracking-wide font-semibold mb-4 text-muted-foreground">
             {t.tasks.taskInfo}
           </h3>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {task.priority && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">{t.tasks.priority}:</span>
-                <Badge variant={task.priority === "high" ? "destructive" : "secondary"} data-testid="badge-priority">
-                  {t.tasks.priorities[task.priority as keyof typeof t.tasks.priorities]}
-                </Badge>
+          <div className="space-y-3">
+            {task.description && (
+              <div className="text-sm">
+                <span className="text-muted-foreground">{t.tasks.description}:</span>
+                <p className="mt-1" data-testid="text-task-description-info">{task.description}</p>
               </div>
             )}
-            {task.dueDate && typeof task.dueDate === 'string' && (
-              <div className="flex items-center gap-2 text-sm">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">{t.tasks.dueDate}:</span>
-                <span data-testid="text-due-date">{format(new Date(task.dueDate), "MMM d, yyyy")}</span>
-              </div>
-            )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {task.priority && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">{t.tasks.priority}:</span>
+                  <Badge variant={task.priority === "high" ? "destructive" : "secondary"} data-testid="badge-priority">
+                    {t.tasks.priorities[task.priority as keyof typeof t.tasks.priorities]}
+                  </Badge>
+                </div>
+              )}
+              {task.dueDate && typeof task.dueDate === 'string' && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{t.tasks.dueDate}:</span>
+                  <span data-testid="text-due-date">{format(new Date(task.dueDate), "MMM d, yyyy")}</span>
+                </div>
+              )}
+            </div>
           </div>
         </Card>
 
@@ -246,18 +262,6 @@ export default function TaskDetailsPage() {
               {t.reports.reportDetails}
             </h3>
             <div className="space-y-4">
-              {appliance?.picture && (
-                <div className="print:mb-6">
-                  <p className="text-sm font-medium text-muted-foreground mb-2 print:text-base print:mb-3">{t.appliances.picture}</p>
-                  <img
-                    src={appliance.picture}
-                    alt={applianceLabel}
-                    className="w-full max-w-sm rounded-md object-cover print:max-w-md"
-                    data-testid="img-appliance-in-report"
-                  />
-                </div>
-              )}
-
               {report.description && (
                 <div className="print:mb-6">
                   <p className="text-sm font-medium text-muted-foreground mb-1 print:text-base print:mb-2">{t.reports.workDescription}</p>
