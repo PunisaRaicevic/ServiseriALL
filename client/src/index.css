@@ -352,8 +352,99 @@
 
 /* Print styles for reports with images */
 @media print {
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+
   .print\:hidden {
     display: none !important;
+  }
+
+  .print\:text-xl {
+    font-size: 1.5rem !important;
+    line-height: 2rem !important;
+  }
+
+  .print\:text-base {
+    font-size: 1rem !important;
+    line-height: 1.5rem !important;
+  }
+
+  .print\:mb-2 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .print\:mb-3 {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .print\:mb-4 {
+    margin-bottom: 1rem !important;
+  }
+
+  .print\:mb-6 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .print\:h-6 {
+    height: 1.5rem !important;
+  }
+
+  .print\:w-6 {
+    width: 1.5rem !important;
+  }
+
+  .print\:max-w-md {
+    max-width: 28rem !important;
+  }
+
+  .print\:bg-transparent {
+    background-color: transparent !important;
+  }
+
+  .print\:border {
+    border-width: 1px !important;
+  }
+
+  .print\:border-gray-300 {
+    border-color: rgb(209, 213, 219) !important;
+  }
+
+  .print\:p-4 {
+    padding: 1rem !important;
+  }
+
+  .print\:page-break-before {
+    page-break-before: always !important;
+  }
+
+  .print\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .print\:gap-6 {
+    gap: 1.5rem !important;
+  }
+
+  .print\:aspect-auto {
+    aspect-ratio: auto !important;
+  }
+
+  .print\:h-64 {
+    height: 16rem !important;
+  }
+
+  .print\:cursor-default {
+    cursor: default !important;
+  }
+
+  .print\:hover\:scale-100:hover {
+    transform: scale(1) !important;
+  }
+
+  .print\:object-contain {
+    object-fit: contain !important;
   }
 
   /* Optimize image printing */
@@ -367,28 +458,26 @@
     page-break-after: avoid;
   }
 
-  /* Report images grid for printing */
-  .grid {
-    page-break-inside: avoid;
-  }
-
-  /* Ensure repair photos display properly */
-  [data-testid^="img-repair-"] {
-    page-break-inside: avoid;
-    display: inline-block;
-    width: 200px !important;
-    height: 200px !important;
-    margin: 8px;
-  }
-
   /* Print-friendly colors */
   body {
-    background: white;
-    color: black;
+    background: white !important;
+    color: black !important;
   }
 
   .bg-muted,
   .bg-card {
     background: white !important;
+  }
+
+  /* Hide interactive elements */
+  button,
+  .hover-elevate,
+  .active-elevate-2 {
+    display: none !important;
+  }
+
+  /* Ensure proper spacing for report sections */
+  .space-y-4 > * + * {
+    margin-top: 1.5rem !important;
   }
 }

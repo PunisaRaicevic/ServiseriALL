@@ -241,20 +241,32 @@ export default function TaskDetailsPage() {
 
         {task.status === "completed" && report && (
           <Card className="p-6 mb-6">
-            <h3 className="text-sm uppercase tracking-wide font-semibold mb-4 text-muted-foreground flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+            <h3 className="text-sm uppercase tracking-wide font-semibold mb-4 text-muted-foreground flex items-center gap-2 print:text-xl print:mb-6">
+              <FileText className="h-4 w-4 print:h-6 print:w-6" />
               {t.reports.reportDetails}
             </h3>
             <div className="space-y-4">
+              {appliance?.picture && (
+                <div className="print:mb-6">
+                  <p className="text-sm font-medium text-muted-foreground mb-2 print:text-base print:mb-3">{t.appliances.picture}</p>
+                  <img
+                    src={appliance.picture}
+                    alt={applianceLabel}
+                    className="w-full max-w-sm rounded-md object-cover print:max-w-md"
+                    data-testid="img-appliance-in-report"
+                  />
+                </div>
+              )}
+
               {report.description && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">{t.reports.workDescription}</p>
-                  <p className="text-sm whitespace-pre-wrap" data-testid="text-report-description">{report.description}</p>
+                <div className="print:mb-6">
+                  <p className="text-sm font-medium text-muted-foreground mb-1 print:text-base print:mb-2">{t.reports.workDescription}</p>
+                  <p className="text-sm whitespace-pre-wrap print:text-base" data-testid="text-report-description">{report.description}</p>
                 </div>
               )}
               
               {report.workDuration && (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm print:text-base print:mb-4">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-muted-foreground">{t.reports.workDuration}:</span>
                   <span data-testid="text-work-duration">{report.workDuration} {t.tasks.intervalUnits.minutes || 'min'}</span>
@@ -262,32 +274,32 @@ export default function TaskDetailsPage() {
               )}
 
               {report.sparePartsUsed && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">{t.reports.sparePartsUsed}</p>
-                  <div className="text-sm bg-muted p-3 rounded-md">
+                <div className="print:mb-6">
+                  <p className="text-sm font-medium text-muted-foreground mb-2 print:text-base print:mb-3">{t.reports.sparePartsUsed}</p>
+                  <div className="text-sm bg-muted p-3 rounded-md print:text-base print:bg-transparent print:border print:border-gray-300 print:p-4">
                     {report.sparePartsUsed}
                   </div>
                 </div>
               )}
 
               {report.photos && Array.isArray(report.photos) && report.photos.length > 0 && (
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                    <Image className="h-4 w-4" />
+                <div className="print:mb-6 print:page-break-before">
+                  <p className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2 print:text-base print:mb-4">
+                    <Image className="h-4 w-4 print:hidden" />
                     {t.reports.repairPhotos}
                   </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 print:grid-cols-2 print:gap-6">
                     {report.photos.map((photoUrl, index) => (
                       <div
                         key={index}
-                        className="aspect-square rounded-md overflow-hidden bg-muted group cursor-pointer"
+                        className="aspect-square rounded-md overflow-hidden bg-muted group cursor-pointer print:cursor-default print:aspect-auto print:h-64"
                         onClick={() => window.open(photoUrl, '_blank')}
                         data-testid={`img-repair-${index}`}
                       >
                         <img
                           src={photoUrl}
                           alt={`Repair photo ${index + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform print:hover:scale-100 print:object-contain"
                         />
                       </div>
                     ))}

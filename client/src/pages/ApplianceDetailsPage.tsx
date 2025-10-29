@@ -1,8 +1,10 @@
+import { useState } from "react";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
+import EditApplianceDialog from "@/components/EditApplianceDialog";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wrench, Calendar, Hash, Upload, Printer, Package } from "lucide-react";
+import { Wrench, Calendar, Hash, Edit, Printer, Package } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "@/i18n";
@@ -13,6 +15,7 @@ export default function ApplianceDetailsPage() {
   const t = useTranslation();
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/appliances/:id");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   const { data: appliance, isLoading: isLoadingAppliance } = useQuery<Appliance>({
     queryKey: ["/api/appliances", params?.id],
@@ -70,12 +73,12 @@ export default function ApplianceDetailsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => console.log('Upload photo')}
-              data-testid="button-upload-photo"
+              onClick={() => setEditDialogOpen(true)}
+              data-testid="button-edit-appliance"
               className="gap-2"
             >
-              <Upload className="h-4 w-4" />
-              {t.appliances.uploadPhoto}
+              <Edit className="h-4 w-4" />
+              {t.appliances.editAppliance}
             </Button>
             <Button
               variant="outline"
@@ -190,6 +193,14 @@ export default function ApplianceDetailsPage() {
         <div className="text-center py-12 text-muted-foreground">
           {t.appliances.noServiceHistory}
         </div>
+
+        {appliance && (
+          <EditApplianceDialog
+            open={editDialogOpen}
+            onOpenChange={setEditDialogOpen}
+            appliance={appliance}
+          />
+        )}
       </main>
     </div>
   );
