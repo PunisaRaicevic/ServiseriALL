@@ -162,7 +162,7 @@ export default function TasksPage() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <BackButton to="/dashboard" label={`${t.common.back} ${t.nav.dashboard}`} />
+          <BackButton />
         </div>
 
         <div className="flex items-center justify-between mb-6">

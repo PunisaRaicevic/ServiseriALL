@@ -1,25 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useLocation } from "wouter";
+import { useTranslation } from "@/i18n";
 
 interface BackButtonProps {
-  to: string;
   label?: string;
 }
 
-export default function BackButton({ to, label = "Back" }: BackButtonProps) {
-  const [, setLocation] = useLocation();
+export default function BackButton({ label }: BackButtonProps) {
+  const t = useTranslation();
   
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => setLocation(to)}
+      onClick={() => window.history.back()}
       data-testid="button-back"
       className="gap-2 -ml-2"
     >
       <ArrowLeft className="h-4 w-4" />
-      {label}
+      {label || t.common.back}
     </Button>
   );
 }

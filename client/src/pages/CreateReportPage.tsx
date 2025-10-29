@@ -63,7 +63,7 @@ export default function CreateReportPage() {
       
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <BackButton to={`/tasks/${params?.id}`} label={`${t.common.back} ${t.tasks.taskDetails}`} />
+          <BackButton />
         </div>
 
         <h2 className="text-3xl font-bold mb-6">{t.reports.createReport}</h2>

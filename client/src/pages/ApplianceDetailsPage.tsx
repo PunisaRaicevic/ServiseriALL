@@ -89,7 +89,7 @@ export default function ApplianceDetailsPage() {
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 print:hidden">
-          <BackButton to={`/clients/${appliance.clientId}`} label={`${t.common.back} ${t.clients.clientDetails}`} />
+          <BackButton />
         </div>
 
         <div className="flex items-start justify-between mb-6">

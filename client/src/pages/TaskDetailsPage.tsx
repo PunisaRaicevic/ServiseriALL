@@ -65,7 +65,7 @@ export default function TaskDetailsPage() {
         <Header />
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
-            <BackButton to="/tasks" label={`${t.common.back} ${t.tasks.title}`} />
+            <BackButton />
           </div>
           <div className="text-center py-12 text-muted-foreground">
             {t.tasks.taskNotFound}
@@ -85,7 +85,7 @@ export default function TaskDetailsPage() {
       
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <BackButton to="/tasks" label={`${t.common.back} ${t.tasks.title}`} />
+          <BackButton />
         </div>
 
         <div className="flex items-start justify-between mb-6 flex-wrap gap-4">

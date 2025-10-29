@@ -71,7 +71,7 @@ export default function StoragePage() {
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <BackButton to="/dashboard" label={`${t.common.back} ${t.nav.dashboard}`} />
+          <BackButton />
         </div>
 
         <h2 className="text-3xl font-bold mb-6">{t.storage.title}</h2>
