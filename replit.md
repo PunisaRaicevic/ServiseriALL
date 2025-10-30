@@ -156,3 +156,23 @@ Core entities with VARCHAR UUID primary keys:
 - **Coverage**: All major UI elements, forms, dialogs, toast messages, and validation errors translated
 - **Default language**: Serbian (Српски) to match Montenegro/Budva region
 - Language switcher accessible on login page (top-right) and in header after login
+
+**Mobile App Deployment - Capacitor** (Added October 30, 2025)
+- **Capacitor 7.4.4** integrated for native Android (and iOS) app deployment
+- **Web-first architecture**: Same React codebase powers web app, Android app, and iOS app
+- **Android platform** configured and ready for Google Play Store submission
+- **Configuration**: `capacitor.config.ts` with app ID `me.budva.tehniko` and app name "Tehniko System"
+- **Build output**: Web assets compiled to `dist/public` and synced to native platforms
+- **Android project**: Located in `android/` folder, ready to open in Android Studio
+- **Default icons**: Capacitor default launcher icons installed (custom Tehniko branding can be added)
+- **Web app unchanged**: Capacitor integration does NOT modify existing web application code
+- **Next steps for Play Store**:
+  1. Download and install Android Studio
+  2. Open project: `npx cap open android`
+  3. Build signed APK/AAB bundle
+  4. Create Google Play Developer account ($25 one-time fee)
+  5. Submit app to Google Play Store
+- **Commands**:
+  - `npm run build` - Build web application
+  - `npx cap sync android` - Sync web assets to Android project
+  - `npx cap open android` - Open Android project in Android Studio
