@@ -8,11 +8,8 @@ const config: CapacitorConfig = {
     androidScheme: 'https'
   },
   android: {
-    buildOptions: {
-      keystorePath: undefined,
-      keystoreAlias: undefined,
-    }
-  }
+  allowMixedContent: true
+}
 };
 
 export default config;
