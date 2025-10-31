@@ -176,3 +176,23 @@ Core entities with VARCHAR UUID primary keys:
   - `npm run build` - Build web application
   - `npx cap sync android` - Sync web assets to Android project
   - `npx cap open android` - Open Android project in Android Studio
+
+**Backend Deployment - Replit Autoscale** (Configured October 31, 2025)
+- **Deployment target**: Replit Autoscale for production backend hosting
+- **Configuration**: `.replit` file configured with `deploymentTarget = "autoscale"`
+- **Build command**: `npm run build` (builds both frontend and backend)
+- **Run command**: `npm run start` (production Express server)
+- **Port**: 5000 (configured in environment)
+- **Android app API connection**:
+  - `VITE_API_URL` environment variable in `.env` sets backend URL for Android app
+  - In development (web), API URL is empty (same origin)
+  - In production (Android), API URL points to Replit deployment (e.g., `https://username.repl.co`)
+  - Modified `client/src/lib/queryClient.ts` to use `API_URL` prefix for all fetch requests
+- **Pricing estimate**: $1-2/month for 5-20 technicians, practically free with Replit Core subscription ($25/month credits)
+- **Deployment steps**: See `DEPLOYMENT_GUIDE.md` for complete instructions
+- **Environment variables required**:
+  - `DATABASE_URL` - Supabase PostgreSQL connection string
+  - `SESSION_SECRET` - Express session secret
+  - `VITE_SUPABASE_URL` - Supabase project URL
+  - `VITE_SUPABASE_ANON_KEY` - Supabase anonymous key
+  - `VITE_API_URL` - Backend URL for Android app (only in `.env` for build, not in Replit Secrets)
