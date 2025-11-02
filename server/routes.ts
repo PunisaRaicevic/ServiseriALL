@@ -214,7 +214,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(tasks);
   });
 
-  // Generate recurring tasks
+  // Generate upcoming recurring task instances (30 days ahead)
+  app.post("/api/tasks/recurring/generate-upcoming", async (req, res) => {
+    try {
+      const { generateUpcomingRecurringInstances } = await import("./recurringTasksService");
+      const result = await generateUpcomingRecurringInstances(30);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Generate recurring tasks (legacy - for past due dates)
   app.post("/api/tasks/recurring/generate", async (req, res) => {
     try {
       const { generateRecurringTasks } = await import("./recurringTasksService");

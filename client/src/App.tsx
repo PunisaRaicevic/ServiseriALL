@@ -39,6 +39,7 @@ function App() {
     const checkAndGenerateRecurringTasks = async () => {
       try {
         await apiRequest("POST", "/api/tasks/recurring/generate");
+        await apiRequest("POST", "/api/tasks/recurring/generate-upcoming");
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       } catch (error) {
         console.error("Failed to generate recurring tasks:", error);
