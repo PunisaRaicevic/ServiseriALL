@@ -67,20 +67,25 @@ Core entities with VARCHAR UUID primary keys:
 - **Documents**: File metadata with related_to/related_id for flexible entity linking
 - **Spare Parts**: Inventory management with part_number, manufacturer, quantity_in_stock, minimum_stock_level, unit_price, location
 
-**Recurring Tasks Feature**
+**Recurring Tasks Feature** (Updated November 2, 2025)
 - Tasks support both one-time repairs and recurring inspections
 - Recurrence patterns: weekly, monthly, quarterly, semi-annual, yearly
 - Configurable intervals (e.g., every 2 weeks, every 3 months)
 - Parent-child task relationships track recurring series history
+- **30-Day Pre-Generation**: System automatically generates task instances up to 30 days ahead for better visibility
+  - `generateUpcomingRecurringInstances()` function creates future instances from parent templates
+  - Avoids duplicate generation via per-parent due-date tracking
+  - Clamps start date to today to prevent past-dated instances
 - Automatic task generation via scheduled service (`recurringTasksService.ts`)
-- Client-side daily check triggers task generation endpoint
+- Client-side daily check triggers both generation endpoints on app startup and every 24 hours
 - Next occurrence dates calculated based on pattern and interval
 
 **API Routes Structure**
 - `/api/clients` - CRUD operations for client management
 - `/api/appliances` - Equipment management with client filtering
-- `/api/tasks` - Task operations including recurring task generation endpoint
-  - `POST /api/tasks/recurring/generate` - Generates new task instances from recurring patterns
+- `/api/tasks` - Task operations including recurring task generation endpoints
+  - `POST /api/tasks/recurring/generate` - Generates new task instances from past-due recurring patterns
+  - `POST /api/tasks/recurring/generate-upcoming` - Generates task instances up to 30 days ahead (added November 2, 2025)
   - `GET /api/tasks/recurring/due` - Returns recurring tasks due for generation
 - `/api/reports` - Service report creation and retrieval
 - `/api/documents` - Document metadata management
@@ -135,7 +140,7 @@ Core entities with VARCHAR UUID primary keys:
 - Prepared endpoints for n8n automation webhook integration (not yet implemented)
 - File storage infrastructure ready for Supabase Storage or similar services (currently local/database storage)
 
-**Authentication Implementation** (Updated October 28, 2025)
+**Authentication Implementation** (Updated November 2, 2025)
 - **Session-based authentication** using `express-session`
 - Login endpoint: `POST /api/login` - validates credentials and creates server-side session
 - Current user endpoint: `GET /api/user/me` - returns authenticated user from session
@@ -143,7 +148,7 @@ Core entities with VARCHAR UUID primary keys:
 - **AuthContext** on frontend provides current user data via `useAuth` hook
 - Header component displays user's full name instead of hardcoded placeholder
 - Session persists across page navigation with 7-day cookie expiration
-- Test user: username "lolo", password "lolo", full name "Punisa Raicevic"
+- Test user: username "Lolo" (capital L), password "lolo" (lowercase), full name "Punisa Raicevic"
 - Note: Password validation is simplified (plaintext comparison) - production should use bcrypt hashing
 
 **Internationalization (i18n)** (Added October 28, 2025)
