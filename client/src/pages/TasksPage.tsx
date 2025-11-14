@@ -115,18 +115,30 @@ export default function TasksPage() {
     ? generateUpcomingDates(new Date(dueDate), recurrencePattern, recurrenceInterval, 5)
     : [];
 
-  const filteredTasks = tasks.filter((task) => {
-    const client = clients.find(c => c.id === task.clientId);
-    
-    const matchesSearch = !searchQuery || 
-      (client?.name && client.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesType = taskTypeFilter === "all" || task.taskType === taskTypeFilter;
-    
-    const isActive = task.status === "pending" || task.status === "in_progress";
-    
-    return matchesSearch && matchesType && isActive;
-  });
+  const filteredTasks = tasks
+    .filter((task) => {
+      const client = clients.find(c => c.id === task.clientId);
+      
+      const matchesSearch = !searchQuery || 
+        (client?.name && client.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesType = taskTypeFilter === "all" || task.taskType === taskTypeFilter;
+      
+      const isActive = task.status === "pending" || task.status === "in_progress";
+      
+      return matchesSearch && matchesType && isActive;
+    })
+    .sort((a, b) => {
+      // Tasks without due dates go to the end
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      
+      // Sort by due date: earliest (closest) first
+      const dateA = new Date(a.dueDate).getTime();
+      const dateB = new Date(b.dueDate).getTime();
+      return dateA - dateB;
+    });
 
   return (
     <div className="min-h-screen bg-background">
