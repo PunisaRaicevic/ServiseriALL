@@ -40,19 +40,19 @@ export default function ClientCard({
             </span>
           </div>
         )}
-        {contactEmail && (
-          <div className="flex items-center gap-2 text-sm">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground" data-testid={`text-contact-email-${clientId}`}>
-              {contactEmail}
-            </span>
-          </div>
-        )}
         {contactPhone && (
           <div className="flex items-center gap-2 text-sm">
             <Phone className="h-4 w-4 text-muted-foreground" />
             <span className="text-muted-foreground" data-testid={`text-contact-phone-${clientId}`}>
               {contactPhone}
+            </span>
+          </div>
+        )}
+        {contactEmail && (
+          <div className="flex items-center gap-2 text-sm">
+            <Mail className="h-4 w-4 text-muted-foreground" />
+            <span className="text-muted-foreground" data-testid={`text-contact-email-${clientId}`}>
+              {contactEmail}
             </span>
           </div>
         )}
