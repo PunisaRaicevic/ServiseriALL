@@ -3,13 +3,14 @@ import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin, Wrench, Calendar, Building2, FileText, Hash, Plus, User } from "lucide-react";
+import { Mail, Phone, MapPin, Wrench, Calendar, Building2, FileText, Hash, Plus, User, Pencil } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useTranslation } from "@/i18n";
 import type { Client, Appliance } from "@shared/schema";
 import AddApplianceDialog from "@/components/AddApplianceDialog";
+import EditClientDialog from "@/components/EditClientDialog";
 
 export default function ClientDetailsPage() {
   const t = useTranslation();
@@ -17,6 +18,7 @@ export default function ClientDetailsPage() {
   const [, params] = useRoute("/clients/:id");
   const clientId = params?.id;
   const [isAddApplianceOpen, setIsAddApplianceOpen] = useState(false);
+  const [isEditClientOpen, setIsEditClientOpen] = useState(false);
 
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
@@ -71,7 +73,18 @@ export default function ClientDetailsPage() {
           <BackButton />
         </div>
 
-        <h2 className="text-3xl font-bold mb-6" data-testid="text-client-name">{client.name}</h2>
+        <div className="flex items-center justify-between mb-6 gap-4">
+          <h2 className="text-3xl font-bold" data-testid="text-client-name">{client.name}</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditClientOpen(true)}
+            data-testid="button-edit-client"
+          >
+            <Pencil className="h-4 w-4 mr-2" />
+            {t.clients.editClient}
+          </Button>
+        </div>
 
         <Card className="p-6 mb-6">
           <h3 className="text-sm uppercase tracking-wide font-semibold mb-4 text-muted-foreground">
@@ -210,6 +223,12 @@ export default function ClientDetailsPage() {
         onSuccess={(applianceId) => {
           setLocation(`/appliances/${applianceId}`);
         }}
+      />
+
+      <EditClientDialog
+        open={isEditClientOpen}
+        onOpenChange={setIsEditClientOpen}
+        client={client}
       />
     </div>
   );
