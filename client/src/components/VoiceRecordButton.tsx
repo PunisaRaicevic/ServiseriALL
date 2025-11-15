@@ -40,22 +40,49 @@ export default function VoiceRecordButton({
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "audio/webm",
-      });
+      
+      // Try different mime types based on browser support
+      let mimeType = "audio/webm";
+      if (!MediaRecorder.isTypeSupported("audio/webm")) {
+        if (MediaRecorder.isTypeSupported("audio/mp4")) {
+          mimeType = "audio/mp4";
+        } else if (MediaRecorder.isTypeSupported("audio/ogg")) {
+          mimeType = "audio/ogg";
+        } else {
+          mimeType = ""; // Let browser choose
+        }
+      }
+      
+      console.log("Using mime type:", mimeType);
+      
+      const mediaRecorder = mimeType 
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
 
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
+        console.log("Data available, size:", event.data.size);
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
+        console.log("Recording stopped, chunks:", audioChunksRef.current.length);
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
+          type: mimeType || "audio/webm",
         });
+        console.log("Audio blob size:", audioBlob.size);
+        
+        if (audioBlob.size === 0) {
+          toast({
+            description: t.voice.transcriptionError,
+            variant: "destructive",
+          });
+          return;
+        }
+        
         await processAudio(audioBlob);
 
         // Clean up stream
@@ -85,17 +112,22 @@ export default function VoiceRecordButton({
     setIsProcessing(true);
 
     try {
+      console.log("Processing audio, size:", audioBlob.size, "type:", audioBlob.type);
+      
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.webm");
       
       // Add context if available
       if (applianceContext) {
         formData.append("applianceContext", JSON.stringify(applianceContext));
+        console.log("Added appliance context:", applianceContext);
       }
       if (clientContext) {
         formData.append("clientContext", JSON.stringify(clientContext));
+        console.log("Added client context:", clientContext);
       }
 
+      console.log("Sending request to /api/transcribe-voice");
       const response = await apiRequest("POST", "/api/transcribe-voice", formData) as {
         transcript: string;
         reportData: {
@@ -105,6 +137,7 @@ export default function VoiceRecordButton({
         };
       };
 
+      console.log("Received response:", response);
       toast({
         description: t.voice.transcriptionSuccess,
       });
