@@ -9,8 +9,81 @@ import {
   insertDocumentSchema,
   insertSparePartSchema 
 } from "@shared/schema";
+import multer from "multer";
+import OpenAI from "openai";
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// Configure multer for memory storage (for audio files)
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 } // 25MB limit (Whisper API limit)
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Voice to Report endpoint
+  app.post("/api/transcribe-voice", upload.single("audio"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No audio file provided" });
+      }
+
+      // Step 1: Transcribe audio using Whisper
+      const transcription = await openai.audio.transcriptions.create({
+        file: new File([req.file.buffer], req.file.originalname, { type: req.file.mimetype }),
+        model: "whisper-1",
+        language: "sr", // Serbian language for Montenegro
+        prompt: "Tehničar opisuje popravku uređaja, delove koji su korišćeni, i vreme rada.",
+      });
+
+      const transcript = transcription.text;
+
+      // Step 2: Generate structured report using GPT
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: `Ti si asistent koji pretvara glasovne poruke tehničara u strukturirane izvještaje o popravkama.
+            
+Iz transkripta glasovne poruke, ekstraktuj:
+1. **Opis rada**: Detaljan opis šta je urađeno na popravci
+2. **Trajanje rada**: Koliko minuta je trajao posao (procijeni ako nije navedeno)
+3. **Korišćeni dijelovi**: Lista rezervnih dijelova koji su korišćeni (ako ih ima)
+
+Odgovori SAMO u JSON formatu:
+{
+  "description": "Detaljan opis rada koji je obavljen...",
+  "workDuration": 60,
+  "sparePartsUsed": "Lista korišćenih dijelova (ili null)"
+}`,
+          },
+          {
+            role: "user",
+            content: `Glasovna poruka tehničara: "${transcript}"`,
+          },
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" },
+      });
+
+      const reportData = JSON.parse(completion.choices[0].message.content || "{}");
+
+      res.json({
+        transcript,
+        reportData,
+      });
+    } catch (error: any) {
+      console.error("Voice transcription error:", error);
+      res.status(500).json({ 
+        message: error.message || "Failed to process voice message" 
+      });
+    }
+  });
+
   // Authentication
   app.post("/api/login", async (req, res) => {
     try {
