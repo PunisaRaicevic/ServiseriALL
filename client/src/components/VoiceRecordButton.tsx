@@ -170,28 +170,30 @@ export default function VoiceRecordButton({
   return (
     <Card className="p-6 overflow-visible hover-elevate cursor-pointer bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
       <div
-        className="flex items-center gap-4"
+        className="flex flex-col gap-4"
         onClick={disabled ? undefined : startRecording}
       >
-        <div className="flex-shrink-0 p-3 rounded-full bg-primary/10">
-          <Mic className="h-6 w-6 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
+        <div>
           <h3 className="text-base font-semibold mb-1">{t.voice.recordMessage}</h3>
           <p className="text-xs text-muted-foreground">{t.voice.recordHint}</p>
         </div>
-        <Button
-          type="button"
-          variant="default"
-          size="default"
-          onClick={disabled ? undefined : startRecording}
-          disabled={disabled}
-          data-testid="button-start-recording"
-          className="flex-shrink-0"
-        >
-          <Mic className="h-4 w-4 mr-2" />
-          {t.voice.record}
-        </Button>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-shrink-0 p-3 rounded-full bg-primary/10">
+            <Mic className="h-6 w-6 text-primary" />
+          </div>
+          <Button
+            type="button"
+            variant="default"
+            size="default"
+            onClick={disabled ? undefined : startRecording}
+            disabled={disabled}
+            data-testid="button-start-recording"
+            className="flex-shrink-0"
+          >
+            <Mic className="h-4 w-4 mr-2" />
+            {t.voice.record}
+          </Button>
+        </div>
       </div>
     </Card>
   );
