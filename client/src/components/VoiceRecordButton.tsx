@@ -168,23 +168,26 @@ export default function VoiceRecordButton({
   }
 
   return (
-    <Card className="p-4 border-2 border-dashed overflow-visible hover-elevate cursor-pointer">
+    <Card className="p-6 overflow-visible hover-elevate cursor-pointer bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
       <div
-        className="flex items-center gap-3"
+        className="flex items-center gap-4"
         onClick={disabled ? undefined : startRecording}
       >
-        <Mic className="h-5 w-5 text-primary" />
-        <div className="flex-1">
-          <p className="text-sm font-medium">{t.voice.recordMessage}</p>
+        <div className="flex-shrink-0 p-3 rounded-full bg-primary/10">
+          <Mic className="h-6 w-6 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium mb-1">{t.voice.recordMessage}</p>
           <p className="text-xs text-muted-foreground">{t.voice.recordHint}</p>
         </div>
         <Button
           type="button"
           variant="default"
-          size="sm"
+          size="default"
           onClick={disabled ? undefined : startRecording}
           disabled={disabled}
           data-testid="button-start-recording"
+          className="flex-shrink-0"
         >
           <Mic className="h-4 w-4 mr-2" />
           {t.voice.record}
