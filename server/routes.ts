@@ -25,41 +25,84 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Voice to Report endpoint
-  app.post("/api/transcribe-voice", upload.single("audio"), async (req, res) => {
+  app.post("/api/transcribe-voice", upload.fields([
+    { name: "audio", maxCount: 1 },
+    { name: "applianceContext", maxCount: 1 },
+    { name: "clientContext", maxCount: 1 }
+  ]), async (req, res) => {
     try {
-      if (!req.file) {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
+      if (!files || !files.audio || files.audio.length === 0) {
         return res.status(400).json({ message: "No audio file provided" });
+      }
+
+      const audioFile = files.audio[0];
+
+      // Parse context from form data with error handling
+      let applianceContext = null;
+      let clientContext = null;
+      
+      try {
+        if (req.body.applianceContext) {
+          applianceContext = JSON.parse(req.body.applianceContext);
+        }
+        if (req.body.clientContext) {
+          clientContext = JSON.parse(req.body.clientContext);
+        }
+      } catch (parseError) {
+        console.error("Failed to parse context:", parseError);
+        return res.status(400).json({ message: "Invalid context format" });
+      }
+
+      // Build context description for Whisper and GPT
+      let contextDescription = "";
+      if (clientContext) {
+        contextDescription += `Klijent: ${clientContext.name}. `;
+      }
+      if (applianceContext) {
+        contextDescription += `Uređaj: ${applianceContext.maker} ${applianceContext.type}`;
+        if (applianceContext.model) {
+          contextDescription += ` ${applianceContext.model}`;
+        }
+        if (applianceContext.serialNumber) {
+          contextDescription += ` (Serijski broj: ${applianceContext.serialNumber})`;
+        }
+        contextDescription += ". ";
       }
 
       // Step 1: Transcribe audio using Whisper
       const transcription = await openai.audio.transcriptions.create({
-        file: new File([req.file.buffer], req.file.originalname, { type: req.file.mimetype }),
+        file: new File([audioFile.buffer], audioFile.originalname, { type: audioFile.mimetype }),
         model: "whisper-1",
         language: "sr", // Serbian language for Montenegro
-        prompt: "Tehničar opisuje popravku uređaja, delove koji su korišćeni, i vreme rada.",
+        prompt: contextDescription + "Tehničar opisuje popravku uređaja, delove koji su korišćeni, i vreme rada.",
       });
 
       const transcript = transcription.text;
 
       // Step 2: Generate structured report using GPT
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: `Ti si asistent koji pretvara glasovne poruke tehničara u strukturirane izvještaje o popravkama.
-            
+      const systemPrompt = `Ti si asistent koji pretvara glasovne poruke tehničara u strukturirane izvještaje o popravkama.
+
+${contextDescription ? `KONTEKST SERVISA:\n${contextDescription}\n` : ""}
 Iz transkripta glasovne poruke, ekstraktuj:
-1. **Opis rada**: Detaljan opis šta je urađeno na popravci
+1. **Opis rada**: Detaljan opis šta je urađeno na popravci. Obavezno navedi tačan uređaj koji se popravlja.
 2. **Trajanje rada**: Koliko minuta je trajao posao (procijeni ako nije navedeno)
 3. **Korišćeni dijelovi**: Lista rezervnih dijelova koji su korišćeni (ako ih ima)
 
 Odgovori SAMO u JSON formatu:
 {
-  "description": "Detaljan opis rada koji je obavljen...",
+  "description": "Detaljan opis rada koji je obavljen na [naziv uređaja]...",
   "workDuration": 60,
   "sparePartsUsed": "Lista korišćenih dijelova (ili null)"
-}`,
+}`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
           },
           {
             role: "user",

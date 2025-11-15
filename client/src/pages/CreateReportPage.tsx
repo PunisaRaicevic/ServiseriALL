@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { useLocation, useRoute } from "wouter";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/i18n";
+import type { Task, Client, Appliance } from "@shared/schema";
 
 export default function CreateReportPage() {
   const t = useTranslation();
@@ -23,6 +24,23 @@ export default function CreateReportPage() {
   const [sparePartsUsed, setSparePartsUsed] = useState("");
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const { toast } = useToast();
+
+  // Fetch task, client, and appliance data for context
+  const { data: tasks = [] } = useQuery<Task[]>({
+    queryKey: ["/api/tasks"],
+  });
+
+  const { data: clients = [] } = useQuery<Client[]>({
+    queryKey: ["/api/clients"],
+  });
+
+  const { data: appliances = [] } = useQuery<Appliance[]>({
+    queryKey: ["/api/appliances"],
+  });
+
+  const task = tasks.find(t => t.id === params?.id);
+  const client = task ? clients.find(c => c.id === task.clientId) : null;
+  const appliance = task?.applianceId ? appliances.find(a => a.id === task.applianceId) : null;
 
   const createReportMutation = useMutation({
     mutationFn: async (reportData: any) => {
@@ -80,6 +98,15 @@ export default function CreateReportPage() {
                     setSparePartsUsed(reportData.sparePartsUsed || "");
                   }}
                   disabled={createReportMutation.isPending}
+                  applianceContext={appliance && appliance.maker && appliance.type ? {
+                    maker: appliance.maker,
+                    type: appliance.type,
+                    model: appliance.model || undefined,
+                    serialNumber: appliance.serial || undefined,
+                  } : undefined}
+                  clientContext={client ? {
+                    name: client.name,
+                  } : undefined}
                 />
               </div>
 

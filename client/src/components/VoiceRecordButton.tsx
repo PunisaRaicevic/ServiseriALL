@@ -13,11 +13,22 @@ interface VoiceRecordButtonProps {
     sparePartsUsed: string | null;
   }) => void;
   disabled?: boolean;
+  applianceContext?: {
+    maker: string;
+    type: string;
+    model?: string;
+    serialNumber?: string;
+  };
+  clientContext?: {
+    name: string;
+  };
 }
 
 export default function VoiceRecordButton({
   onReportGenerated,
   disabled = false,
+  applianceContext,
+  clientContext,
 }: VoiceRecordButtonProps) {
   const t = useTranslation();
   const { toast } = useToast();
@@ -76,6 +87,14 @@ export default function VoiceRecordButton({
     try {
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.webm");
+      
+      // Add context if available
+      if (applianceContext) {
+        formData.append("applianceContext", JSON.stringify(applianceContext));
+      }
+      if (clientContext) {
+        formData.append("clientContext", JSON.stringify(clientContext));
+      }
 
       const response = await apiRequest("POST", "/api/transcribe-voice", formData) as {
         transcript: string;
