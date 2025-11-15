@@ -77,14 +77,14 @@ export default function VoiceRecordButton({
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.webm");
 
-      const response = await apiRequest<{
+      const response = await apiRequest("POST", "/api/transcribe-voice", formData) as {
         transcript: string;
         reportData: {
           description: string;
           workDuration: number;
           sparePartsUsed: string | null;
         };
-      }>("POST", "/api/transcribe-voice", formData);
+      };
 
       toast({
         description: t.voice.transcriptionSuccess,

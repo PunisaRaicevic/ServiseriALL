@@ -305,4 +305,19 @@ export const en = {
     updateSuccess: 'Spare part updated successfully',
     lowStock: 'Low Stock',
   },
+
+  // Voice Recording
+  voice: {
+    recordMessage: 'Record Voice Message',
+    recordHint: 'ChatGPT will automatically generate a report based on your voice message',
+    record: 'Record',
+    recording: 'Recording...',
+    recordingHint: 'Describe the repair, parts used, and work duration. Click Stop when finished.',
+    stop: 'Stop',
+    processing: 'ChatGPT is processing your voice message...',
+    processingHint: 'This may take 5-10 seconds',
+    transcriptionSuccess: 'Report generated successfully! You can edit it before submitting.',
+    transcriptionError: 'Failed to process voice message. Please try again.',
+    microphoneError: 'Microphone not available. Check browser permissions.',
+  },
 };

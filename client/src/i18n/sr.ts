@@ -305,4 +305,19 @@ export const sr = {
     updateSuccess: 'Rezervni deo uspešno ažuriran',
     lowStock: 'Niska Zaliha',
   },
+
+  // Voice Recording
+  voice: {
+    recordMessage: 'Snimite Glasovnu Poruku',
+    recordHint: 'ChatGPT će automatski generisati izveštaj na osnovu vaše glasovne poruke',
+    record: 'Snimi',
+    recording: 'Snimanje u toku...',
+    recordingHint: 'Opišite popravku, korišćene delove i vreme rada. Kliknite Stop kada završite.',
+    stop: 'Stop',
+    processing: 'ChatGPT obrađuje glasovnu poruku...',
+    processingHint: 'Ovo može potrajati 5-10 sekundi',
+    transcriptionSuccess: 'Izveštaj uspešno generisan! Možete ga izmeniti pre slanja.',
+    transcriptionError: 'Greška pri obradi glasovne poruke. Pokušajte ponovo.',
+    microphoneError: 'Mikrofon nije dostupan. Proverite dozvole u browseru.',
+  },
 };
