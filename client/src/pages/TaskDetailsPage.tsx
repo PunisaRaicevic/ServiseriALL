@@ -69,8 +69,13 @@ export default function TaskDetailsPage() {
       setLocation("/tasks");
     },
     onError: (error: any) => {
+      // Show specific error for completed tasks
+      const errorMessage = error.message?.includes("Cannot delete completed task") 
+        ? t.tasks.deleteCompletedError
+        : error.message || "Failed to delete task";
+      
       toast({
-        description: error.message || "Failed to delete task",
+        description: errorMessage,
         variant: "destructive",
       });
     },

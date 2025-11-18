@@ -207,6 +207,7 @@ export const en = {
     },
     deleteConfirm: 'Are you sure you want to delete this task?',
     deleteSuccess: 'Task deleted successfully',
+    deleteCompletedError: 'Cannot delete completed task. Completed tasks are preserved as history.',
     createSuccess: 'Task created successfully',
     createError: 'Failed to create task',
     updateSuccess: 'Task updated successfully',

@@ -207,6 +207,7 @@ export const sr = {
     },
     deleteConfirm: 'Da li ste sigurni da želite da obrišete ovaj zadatak?',
     deleteSuccess: 'Zadatak uspešno obrisan',
+    deleteCompletedError: 'Ne možete obrisati završen zadatak. Završeni zadaci se čuvaju kao istorija.',
     createSuccess: 'Zadatak uspešno kreiran',
     createError: 'Greška pri kreiranju zadatka',
     updateSuccess: 'Zadatak uspešno ažuriran',

@@ -401,6 +401,13 @@ Odgovori SAMO u JSON formatu:
       return res.status(404).json({ message: "Task not found" });
     }
     
+    // Don't allow deletion of completed tasks (they are history)
+    if (task.status === "completed") {
+      return res.status(409).json({ 
+        message: "Cannot delete completed task. Completed tasks are preserved as history." 
+      });
+    }
+    
     await storage.deleteTaskCascade(req.params.id);
     res.status(204).send();
   });
