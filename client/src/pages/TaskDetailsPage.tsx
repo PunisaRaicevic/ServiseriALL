@@ -5,19 +5,33 @@ import StatusBadge from "@/components/StatusBadge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, MapPin, Wrench, Calendar, Package, Hash, Repeat, Clock, Printer, FileText, Image } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Mail, Phone, MapPin, Wrench, Calendar, Package, Hash, Repeat, Clock, Printer, FileText, Image, Edit, Trash2 } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { useTranslation } from "@/i18n";
 import { getRecurrencePatternLabel, type RecurrencePattern } from "@/lib/recurringUtils";
 import type { Task, Client, Appliance, Report } from "@shared/schema";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function TaskDetailsPage() {
   const t = useTranslation();
   const [, setLocation] = useLocation();
   const [, params] = useRoute("/tasks/:id");
   const taskId = params?.id;
+  const { toast } = useToast();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<Task[]>({
     queryKey: ["/api/tasks"],
@@ -42,6 +56,31 @@ export default function TaskDetailsPage() {
   const report = reports.length > 0 ? reports[0] : null;
 
   const isLoading = tasksLoading || clientsLoading || appliancesLoading || reportsLoading;
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest("DELETE", `/api/tasks/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({
+        description: t.tasks.deleteSuccess,
+      });
+      setLocation("/tasks");
+    },
+    onError: (error: any) => {
+      toast({
+        description: error.message || "Failed to delete task",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = () => {
+    if (taskId) {
+      deleteTaskMutation.mutate(taskId);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -105,6 +144,28 @@ export default function TaskDetailsPage() {
           </div>
           <div className="flex flex-col items-end gap-3">
             <StatusBadge status={task.status as "pending" | "in_progress" | "completed"} />
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setLocation(`/tasks/${taskId}/edit`)}
+                data-testid="button-edit-task"
+              >
+                <Edit className="h-4 w-4" />
+                {t.tasks.editTask}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                data-testid="button-delete-task"
+              >
+                <Trash2 className="h-4 w-4" />
+                {t.tasks.deleteTask}
+              </Button>
+            </div>
             {task.status === "completed" && (
               <Button
                 variant="outline"
@@ -325,6 +386,27 @@ export default function TaskDetailsPage() {
           </Button>
         )}
       </main>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent data-testid="dialog-delete-task">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.tasks.deleteTask}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.tasks.deleteConfirm}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">{t.common.cancel}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              {t.tasks.deleteTask}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
