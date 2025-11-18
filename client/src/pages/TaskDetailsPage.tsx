@@ -160,16 +160,6 @@ export default function TaskDetailsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2"
-                onClick={() => setLocation(`/tasks/${taskId}/edit`)}
-                data-testid="button-edit-task"
-              >
-                <Edit className="h-4 w-4" />
-                {t.tasks.editTask}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
                 className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 onClick={() => setIsDeleteDialogOpen(true)}
                 data-testid="button-delete-task"
