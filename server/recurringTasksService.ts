@@ -56,7 +56,7 @@ export async function generateUpcomingRecurringInstances(daysAhead: number = 30)
     if (!parentTask.dueDate || !parentTask.recurrencePattern) continue;
     
     const existingInstances = allTasks.filter(
-      t => t.parentTaskId === parentTask.id && t.status === "pending"
+      t => t.parentTaskId === parentTask.id
     );
     const existingDueDates = new Set(
       existingInstances.map(t => t.dueDate).filter((d): d is string => d !== null)
