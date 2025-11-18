@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import StatusBadge from "./StatusBadge";
 import { format } from "date-fns";
 import { Repeat } from "lucide-react";
 import { getRecurrencePatternLabel } from "@/lib/recurringUtils";
@@ -54,14 +53,13 @@ export default function TaskCard({
         </div>
       )}
       
-      <div className="flex items-start justify-between gap-4 mb-3">
+      <div className="flex items-start gap-4 mb-3">
         <div className="flex items-center gap-2 flex-1">
           {isRecurring && <Repeat className="w-4 h-4 text-primary" />}
           <h3 className="text-lg font-medium flex-1" data-testid={`text-task-description-${taskId}`}>
             {description}
           </h3>
         </div>
-        <StatusBadge status={status} />
       </div>
       
       <div className="flex flex-col gap-1 mb-2">
