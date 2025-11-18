@@ -361,7 +361,6 @@ Odgovori SAMO u JSON formatu:
       const validatedData = insertTaskSchema.parse(req.body);
       
       if (validatedData.taskType === "recurring" && validatedData.dueDate && validatedData.recurrencePattern && validatedData.recurrencePattern !== "none") {
-        const { calculateNextOccurrenceDate } = await import("./recurringTasksService");
         validatedData.nextOccurrenceDate = calculateNextOccurrenceDate(
           validatedData.dueDate as string,
           validatedData.recurrencePattern as string,
