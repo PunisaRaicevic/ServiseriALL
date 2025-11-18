@@ -1,0 +1,31 @@
+import html2pdf from "html2pdf.js";
+import { InAppBrowser } from "@capacitor/inapp-browser";
+
+export async function printReport(elementId: string, fileName = "report.pdf") {
+  const element = document.getElementById(elementId);
+  if (!element) {
+    console.error(`Element with ID "${elementId}" not found`);
+    return;
+  }
+
+  const options = {
+    margin: 0.5,
+    filename: fileName,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+  };
+
+  try {
+    const pdfUrl = await html2pdf().set(options).from(element).outputPdf("bloburl");
+
+    // ✅ Umesto window.open — koristi InAppBrowser
+    await InAppBrowser.open({
+      url: pdfUrl,
+      toolbarColor: "#ffffff",
+      presentationStyle: "fullscreen",
+    });
+  } catch (err) {
+    console.error("Error generating PDF:", err);
+  }
+}
