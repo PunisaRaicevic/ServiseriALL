@@ -49,7 +49,7 @@ export default function TaskDetailsPage() {
         <Header />
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="mb-6">
-            <BackButton to="/tasks" label={`${t.common.back} ${t.tasks.title}`} />
+            <BackButton label={t.common.back} />
           </div>
           <div className="text-center py-12 text-muted-foreground">
             {t.common.loading}
@@ -152,7 +152,7 @@ export default function TaskDetailsPage() {
                     <img
                       src={appliance.picture}
                       alt={applianceLabel}
-                      className="w-16 h-16 rounded-md object-cover flex-shrink-0"
+                      className="w-24 h-24 rounded-md object-cover flex-shrink-0"
                       data-testid="img-appliance-thumbnail"
                     />
                   )}
@@ -205,10 +205,10 @@ export default function TaskDetailsPage() {
                 <div>
                   <p className="font-medium text-lg" data-testid="text-client-name">{client.name}</p>
                 </div>
-                {client.contact && (
+                {client.contactPhone && (
                   <div className="flex items-center gap-2 text-sm">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span data-testid="text-client-contact">{client.contact}</span>
+                    <span data-testid="text-client-contact">{client.contactPhone}</span>
                   </div>
                 )}
                 {client.address && (
