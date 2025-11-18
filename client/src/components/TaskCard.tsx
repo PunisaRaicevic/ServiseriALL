@@ -48,6 +48,12 @@ export default function TaskCard({
       onClick={onClick}
       data-testid={`card-task-${taskId}`}
     >
+      {applianceName && (
+        <div className="text-sm text-muted-foreground mb-2" data-testid={`text-appliance-name-${taskId}`}>
+          {applianceName}
+        </div>
+      )}
+      
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-center gap-2 flex-1">
           {isRecurring && <Repeat className="w-4 h-4 text-primary" />}
@@ -66,11 +72,6 @@ export default function TaskCard({
             {format(createdAt, "MMM d, yyyy")}
           </span>
         </div>
-        {applianceName && (
-          <div className="text-sm text-muted-foreground" data-testid={`text-appliance-name-${taskId}`}>
-            {applianceName}
-          </div>
-        )}
       </div>
 
       {isRecurring && (
