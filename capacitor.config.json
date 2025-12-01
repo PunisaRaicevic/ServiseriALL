@@ -1,0 +1,11 @@
+{
+  "appId": "me.budva.tehniko",
+  "appName": "Tehniko System",
+  "webDir": "dist/public",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
