@@ -42,15 +42,20 @@ function App() {
         await apiRequest("POST", "/api/tasks/recurring/generate-upcoming");
         queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
       } catch (error) {
-        console.error("Failed to generate recurring tasks:", error);
+        console.log("Recurring tasks check skipped (offline or server unavailable)");
       }
     };
 
-    checkAndGenerateRecurringTasks();
+    const timeoutId = setTimeout(() => {
+      checkAndGenerateRecurringTasks();
+    }, 2000);
     
     const interval = setInterval(checkAndGenerateRecurringTasks, 24 * 60 * 60 * 1000);
     
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
