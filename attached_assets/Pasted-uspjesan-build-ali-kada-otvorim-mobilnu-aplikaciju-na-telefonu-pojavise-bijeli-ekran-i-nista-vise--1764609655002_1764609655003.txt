@@ -1,0 +1,80 @@
+uspjesan build ali kada otvorim mobilnu aplikaciju na telefonu pojavise bijeli ekran i nista vise
+
+Odličan uspeh - build je prošao! Problem sa belim ekranom je čest kod Capacitor aplikacija. Evo kako da ga rešite:
+
+Najčešći uzroci i rešenja:
+1. Pogrešan webDir putanja Vidim da AppFlow koristi webDir: "dist/public". Proverite da li je ovo tačna putanja gde se nalazi vaš build.
+
+U vašem capacitor.config.json (ili .ts) fajlu u root-u projekta:
+
+json
+{
+  "appId": "com.yourapp.id",
+  "appName": "ServiceManager",
+  "webDir": "dist/public",
+  "bundledWebRuntime": false
+}
+2. Build se ne pokreće pre Capacitor sync-a
+
+Dodajte u vaš package.json:
+
+json
+"scripts": {
+  "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+  "cap:sync": "npm run build && npx cap sync"
+}
+3. Problem sa rutama (najčešći uzrok)
+
+U vašem vite.config.js dodajte base:
+
+javascript
+export default defineConfig({
+  base: '',  // ili base: './'
+  build: {
+    outDir: 'dist/public'
+  }
+})
+4. Index.html putanja
+
+Proverite da li se index.html nalazi u dist/public/ folderu nakon build-a.
+
+5. Provera Console Error-a
+
+Omogućite Remote Debugging:
+
+Android:
+Povežite telefon preko USB
+Otvorite Chrome: chrome://inspect
+Kliknite "Inspect" na vašoj aplikaciji
+Pogledajte Console za greške
+Alternativa: Dodajte error handling u index.html:
+html
+<script>
+  window.onerror = function(msg, url, lineNo, columnNo, error) {
+    alert('Error: ' + msg + '\nURL: ' + url + '\nLine: ' + lineNo);
+    return false;
+  };
+</script>
+6. Ažurirajte capacitor.config
+
+U GitHub repozitorijumu, dodajte ili ažurirajte capacitor.config.json:
+
+json
+{
+  "appId": "com.servicemanager.app",
+  "appName": "ServiceManager",
+  "webDir": "dist/public",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
+7. Push promene i rebuild
+
+Nakon izmena:
+
+bash
+git add .
+git commit -m "Fix white screen - update capacitor config"
+git push
+Zatim napravite novi build u AppFlow-u.
