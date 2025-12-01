@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useTranslation } from "@/i18n";
 
@@ -13,10 +13,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      await fetch('/api/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      await apiRequest('POST', '/api/logout');
       queryClient.clear();
       setLocation('/');
     } catch (error) {

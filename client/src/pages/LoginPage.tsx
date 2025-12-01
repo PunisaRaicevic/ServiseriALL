@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useTranslation } from "@/i18n";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import tehnikoLogo from "@assets/ChatGPT Image Oct 28, 2025, 11_42_45 AM_1761649167166.png";
@@ -21,25 +21,17 @@ export default function LoginPage() {
     setIsLoading(true);
     
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        alert(error.message || t.auth.loginError);
-        setIsLoading(false);
-        return;
-      }
-
+      const response = await apiRequest('POST', '/api/login', { username, password });
+      const data = await response.json();
+      
+      console.log('[Login] Success:', data);
       await queryClient.invalidateQueries({ queryKey: ["/api/user/me"] });
       setLocation('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      alert(t.auth.loginError);
+      // Extract error message from HttpError or use generic message
+      const errorMessage = error.message || t.auth.loginError;
+      alert(errorMessage);
       setIsLoading(false);
     }
   };
