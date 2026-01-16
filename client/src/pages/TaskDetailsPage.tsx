@@ -154,234 +154,182 @@ export default function TaskDetailsPage() {
           <BackButton />
         </div>
 
-        <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <h2 className="text-3xl font-bold" data-testid="text-task-description">{task.description}</h2>
+        <div className="flex items-start justify-between mb-4 flex-wrap gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h2 className="text-2xl font-bold truncate" data-testid="text-task-description">{task.description}</h2>
+              <StatusBadge status={task.status as "pending" | "in_progress" | "completed"} />
               {task.taskType === "recurring" && (
-                <Badge variant="secondary" className="gap-1">
+                <Badge variant="secondary" className="gap-1 text-xs">
                   <Repeat className="h-3 w-3" />
                   {t.tasks.types.recurring}
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground">
-              {t.tasks.created} {task.createdAt ? format(new Date(task.createdAt), "MMMM d, yyyy") : t.common.unknownDate}
+            <p className="text-xs text-muted-foreground">
+              {t.tasks.created} {task.createdAt ? format(new Date(task.createdAt), "MMM d, yyyy") : t.common.unknownDate}
             </p>
           </div>
-          <div className="flex flex-col items-end gap-3">
-            <StatusBadge status={task.status as "pending" | "in_progress" | "completed"} />
-            <div className="flex flex-col gap-3 items-end">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground hidden sm:inline">{t.tasks.editTaskHint || "Izmeni detalje"}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2"
-                  onClick={() => setIsEditDialogOpen(true)}
-                  data-testid="button-edit-task"
-                >
-                  <Edit className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t.tasks.editTask}</span>
-                </Button>
-              </div>
-              {task.status === "completed" && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground hidden sm:inline">{t.tasks.printReportHint || "Štampaj izveštaj"}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => window.print()}
-                    data-testid="button-print-report"
-                  >
-                    <Printer className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t.tasks.printReport}</span>
-                  </Button>
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground hidden sm:inline">{t.tasks.deleteTaskHint || "Obriši samo ovaj zadatak"}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  data-testid="button-delete-task"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t.tasks.deleteTask}</span>
-                </Button>
-              </div>
-              {hasParentTask && parentTask && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground hidden sm:inline">{t.tasks.deleteRecurringTaskHint || "Obriši sve buduće instance"}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                    onClick={() => setIsDeleteParentDialogOpen(true)}
-                    data-testid="button-delete-parent-task"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t.tasks.deleteRecurringTask}</span>
-                  </Button>
-                </div>
-              )}
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditDialogOpen(true)}
+              data-testid="button-edit-task"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            {task.status === "completed" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.print()}
+                data-testid="button-print-report"
+              >
+                <Printer className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              data-testid="button-delete-task"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            {hasParentTask && parentTask && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                onClick={() => setIsDeleteParentDialogOpen(true)}
+                data-testid="button-delete-parent-task"
+                title={t.tasks.deleteRecurringTaskHint}
+              >
+                <Trash2 className="h-4 w-4" />
+                <Repeat className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </div>
 
         {task.taskType === "recurring" && task.recurrencePattern !== "none" && (
-          <Card className="p-4 mb-6 bg-muted">
-            <div className="flex items-start gap-3">
-              <Repeat className="h-5 w-5 text-primary mt-0.5" />
-              <div>
-                <h4 className="font-medium mb-1">{t.tasks.recurringSchedule}</h4>
-                <p className="text-sm text-muted-foreground" data-testid="text-recurrence-info">
-                  {getRecurrencePatternLabel((task.recurrencePattern || "none") as RecurrencePattern, task.recurrenceInterval || 1)}
-                </p>
-                {task.nextOccurrenceDate && typeof task.nextOccurrenceDate === 'string' && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    <span className="font-medium">{t.tasks.nextOccurrence}:</span>{" "}
-                    {format(new Date(task.nextOccurrenceDate), "MMM d, yyyy")}
-                  </p>
-                )}
-              </div>
+          <Card className="p-3 mb-4 bg-muted">
+            <div className="flex items-center gap-2 text-sm">
+              <Repeat className="h-4 w-4 text-primary" />
+              <span data-testid="text-recurrence-info">
+                {getRecurrencePatternLabel((task.recurrencePattern || "none") as RecurrencePattern, task.recurrenceInterval || 1)}
+              </span>
+              {task.nextOccurrenceDate && typeof task.nextOccurrenceDate === 'string' && (
+                <span className="text-muted-foreground">
+                  • {t.tasks.nextOccurrence}: {format(new Date(task.nextOccurrenceDate), "MMM d, yyyy")}
+                </span>
+              )}
             </div>
           </Card>
         )}
 
-        <div className="grid gap-6 md:grid-cols-2 mb-6">
-          <Card className="p-6">
-            <h3 className="text-sm uppercase tracking-wide font-semibold mb-4 text-muted-foreground">
+        <div className="flex flex-wrap gap-3 mb-4 text-sm">
+          {task.priority && (
+            <Badge variant={task.priority === "high" || task.priority === "urgent" ? "destructive" : "secondary"} data-testid="badge-priority">
+              {t.tasks.priorities[task.priority as keyof typeof t.tasks.priorities]}
+            </Badge>
+          )}
+          {task.dueDate && typeof task.dueDate === 'string' && (
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span data-testid="text-due-date">{format(new Date(task.dueDate), "MMM d, yyyy")}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 mb-4">
+          <Card className="p-4">
+            <h3 className="text-xs uppercase tracking-wide font-semibold mb-2 text-muted-foreground">
               {t.appliances.applianceDetails}
             </h3>
             {appliance ? (
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
                   {appliance.picture && (
                     <img
                       src={appliance.picture}
                       alt={applianceLabel}
-                      className="w-24 h-24 rounded-md object-cover flex-shrink-0"
+                      className="w-12 h-12 rounded object-cover flex-shrink-0"
                       data-testid="img-appliance-thumbnail"
                     />
                   )}
-                  <p className="font-medium text-lg" data-testid="text-appliance-name">{applianceLabel}</p>
+                  <div>
+                    <p className="font-medium text-sm" data-testid="text-appliance-name">{applianceLabel}</p>
+                    {appliance.maker && (
+                      <p className="text-xs text-muted-foreground" data-testid="text-appliance-maker">
+                        {appliance.maker} {appliance.type && `• ${appliance.type}`}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                {appliance.maker && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Wrench className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{t.appliances.maker}:</span>
-                    <span data-testid="text-appliance-maker">{appliance.maker}</span>
-                  </div>
-                )}
-                {appliance.type && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{t.appliances.type}:</span>
-                    <span data-testid="text-appliance-type">{appliance.type}</span>
-                  </div>
-                )}
                 {appliance.serial && (
-                  <div className="flex items-center gap-2 text-sm font-mono">
-                    <Hash className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{t.appliances.serial}:</span>
+                  <div className="flex items-center gap-1 text-xs font-mono text-muted-foreground">
+                    <Hash className="h-3 w-3" />
                     <span data-testid="text-appliance-serial">{appliance.serial}</span>
                   </div>
                 )}
                 {(appliance.city || appliance.building || appliance.room) && (
-                  <div className="flex items-start gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div className="flex flex-col">
-                      <span className="text-muted-foreground text-xs">{t.appliances.location}:</span>
-                      <span data-testid="text-appliance-location">
-                        {[appliance.city, appliance.building, appliance.room].filter(Boolean).join(' • ')}
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    <span data-testid="text-appliance-location">
+                      {[appliance.city, appliance.building, appliance.room].filter(Boolean).join(' • ')}
+                    </span>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">{t.appliances.noApplianceAssigned}</p>
+              <p className="text-xs text-muted-foreground">{t.appliances.noApplianceAssigned}</p>
             )}
           </Card>
 
-          <Card className="p-6">
-            <h3 className="text-sm uppercase tracking-wide font-semibold mb-4 text-muted-foreground">
+          <Card className="p-4">
+            <h3 className="text-xs uppercase tracking-wide font-semibold mb-2 text-muted-foreground">
               {t.clients.clientDetails}
             </h3>
             {client ? (
-              <div className="space-y-3">
-                <div>
-                  <p className="font-medium text-lg" data-testid="text-client-name">{client.name}</p>
-                </div>
+              <div className="space-y-1">
+                <p className="font-medium text-sm" data-testid="text-client-name">{client.name}</p>
                 {client.contactPhone && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Phone className="h-3 w-3" />
                     <span data-testid="text-client-contact">{client.contactPhone}</span>
                   </div>
                 )}
                 {client.address && (
-                  <div className="flex items-start gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
                     <span data-testid="text-client-address">{client.address}</span>
                   </div>
                 )}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">{t.clients.clientInfoNotAvailable}</p>
+              <p className="text-xs text-muted-foreground">{t.clients.clientInfoNotAvailable}</p>
             )}
           </Card>
         </div>
 
-        <Card className="p-6 mb-6">
-          <h3 className="text-sm uppercase tracking-wide font-semibold mb-4 text-muted-foreground">
-            {t.tasks.taskInfo}
-          </h3>
-          <div className="space-y-3">
-            {task.description && (
-              <div className="text-sm">
-                <span className="text-muted-foreground">{t.tasks.description}:</span>
-                <p className="mt-1" data-testid="text-task-description-info">{task.description}</p>
-              </div>
-            )}
-            <div className="grid gap-4 sm:grid-cols-2">
-              {task.priority && (
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">{t.tasks.priority}:</span>
-                  <Badge variant={task.priority === "high" ? "destructive" : "secondary"} data-testid="badge-priority">
-                    {t.tasks.priorities[task.priority as keyof typeof t.tasks.priorities]}
-                  </Badge>
-                </div>
-              )}
-              {task.dueDate && typeof task.dueDate === 'string' && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{t.tasks.dueDate}:</span>
-                  <span data-testid="text-due-date">{format(new Date(task.dueDate), "MMM d, yyyy")}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-
         {task.status === "completed" && report && (
           <Card 
-            className="p-6 mb-6 cursor-pointer hover:shadow-md transition-shadow"
+            className="p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setIsEditReportDialogOpen(true)}
             data-testid="card-report"
           >
-            <div className="flex items-start justify-between mb-4">
-              <h3 className="text-sm uppercase tracking-wide font-semibold text-muted-foreground flex items-center gap-2 print:text-xl">
-                <FileText className="h-4 w-4 print:h-6 print:w-6" />
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs uppercase tracking-wide font-semibold text-muted-foreground flex items-center gap-2">
+                <FileText className="h-4 w-4" />
                 {t.reports.reportDetails}
               </h3>
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 print:hidden"
+                className="print:hidden"
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsEditReportDialogOpen(true);
@@ -389,62 +337,47 @@ export default function TaskDetailsPage() {
                 data-testid="button-edit-report"
               >
                 <Edit className="h-4 w-4" />
-                <span className="hidden sm:inline">{t.reports.editReport}</span>
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mb-4 print:hidden">
-              {t.reports.clickToEdit || "Kliknite da biste izmenili izveštaj"}
-            </p>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {report.description && (
-                <div className="print:mb-6">
-                  <p className="text-sm font-medium text-muted-foreground mb-1 print:text-base print:mb-2">{t.reports.workDescription}</p>
-                  <p className="text-sm whitespace-pre-wrap print:text-base" data-testid="text-report-description">{report.description}</p>
-                </div>
+                <p className="text-sm whitespace-pre-wrap" data-testid="text-report-description">{report.description}</p>
               )}
               
-              {report.workDuration && (
-                <div className="flex items-center gap-2 text-sm print:text-base print:mb-4">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">{t.reports.workDuration}:</span>
-                  <span data-testid="text-work-duration">{report.workDuration} {t.tasks.intervalUnits.minutes || 'min'}</span>
-                </div>
-              )}
-
-              {report.sparePartsUsed && (
-                <div className="print:mb-6">
-                  <p className="text-sm font-medium text-muted-foreground mb-2 print:text-base print:mb-3">{t.reports.sparePartsUsed}</p>
-                  <div className="text-sm bg-muted p-3 rounded-md print:text-base print:bg-transparent print:border print:border-gray-300 print:p-4">
-                    {report.sparePartsUsed}
+              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                {report.workDuration && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span data-testid="text-work-duration">{report.workDuration} min</span>
                   </div>
-                </div>
-              )}
+                )}
+                {report.sparePartsUsed && (
+                  <div className="flex items-center gap-1">
+                    <Package className="h-3 w-3" />
+                    <span>{report.sparePartsUsed}</span>
+                  </div>
+                )}
+              </div>
 
               {report.photos && Array.isArray(report.photos) && report.photos.length > 0 && (
-                <div className="print:mb-6 print:page-break-before">
-                  <p className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2 print:text-base print:mb-4">
-                    <Image className="h-4 w-4 print:hidden" />
-                    {t.reports.repairPhotos}
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 print:grid-cols-2 print:gap-6">
-                    {report.photos.map((photoUrl, index) => (
-                      <div
-                        key={index}
-                        className="aspect-square rounded-md overflow-hidden bg-muted group cursor-pointer print:cursor-default print:aspect-auto print:h-64"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          window.open(photoUrl, '_blank');
-                        }}
-                        data-testid={`img-repair-${index}`}
-                      >
-                        <img
-                          src={photoUrl}
-                          alt={`Repair photo ${index + 1}`}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform print:hover:scale-100 print:object-contain"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {report.photos.map((photoUrl, index) => (
+                    <div
+                      key={index}
+                      className="w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-muted cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(photoUrl, '_blank');
+                      }}
+                      data-testid={`img-repair-${index}`}
+                    >
+                      <img
+                        src={photoUrl}
+                        alt={`Repair photo ${index + 1}`}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform"
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
