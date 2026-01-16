@@ -125,6 +125,25 @@ export default function TaskDetailsPage() {
     },
   });
 
+  const deleteRecurringTaskMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest("DELETE", `/api/tasks/${id}/recurring`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({
+        description: t.tasks.deleteSuccess,
+      });
+      setLocation("/tasks");
+    },
+    onError: (error: any) => {
+      toast({
+        description: error?.message || t.common.error,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleDelete = () => {
     if (taskId) {
       deleteTaskMutation.mutate(taskId);
@@ -133,7 +152,7 @@ export default function TaskDetailsPage() {
 
   const handleDeleteParent = () => {
     if (task?.parentTaskId) {
-      deleteTaskMutation.mutate(task.parentTaskId);
+      deleteRecurringTaskMutation.mutate(task.parentTaskId);
     }
   };
 

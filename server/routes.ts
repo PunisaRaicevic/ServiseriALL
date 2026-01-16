@@ -408,12 +408,26 @@ Odgovori SAMO u JSON formatu:
     }
     
     // Don't allow deletion of completed tasks (they are history)
+    // Exception: Allow deletion via recurring endpoint
     if (task.status === "completed") {
       return res.status(409).json({ 
         message: "Cannot delete completed task. Completed tasks are preserved as history." 
       });
     }
     
+    await storage.deleteTaskCascade(req.params.id);
+    res.status(204).send();
+  });
+
+  // Delete a recurring parent task and all its children (bypasses completed check)
+  app.delete("/api/tasks/:id/recurring", async (req, res) => {
+    const task = await storage.getTask(req.params.id);
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+    
+    // This endpoint allows deletion of recurring parent tasks even if completed
+    // because the user explicitly wants to stop the recurring series
     await storage.deleteTaskCascade(req.params.id);
     res.status(204).send();
   });
