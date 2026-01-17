@@ -22,7 +22,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: user = null, isLoading } = useQuery<User | null>({
     queryKey: ["/api/user/me"],
     retry: false,
-    refetchOnMount: true,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
+    staleTime: 0,
   });
 
   return (

@@ -23,9 +23,11 @@ export default function LoginPage() {
     try {
       const response = await apiRequest('POST', '/api/login', { username, password });
       const data = await response.json();
-      
+
       console.log('[Login] Success:', data);
-      await queryClient.invalidateQueries({ queryKey: ["/api/user/me"] });
+      // Clear all cached data and refetch user
+      queryClient.clear();
+      await queryClient.refetchQueries({ queryKey: ["/api/user/me"] });
       setLocation('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);

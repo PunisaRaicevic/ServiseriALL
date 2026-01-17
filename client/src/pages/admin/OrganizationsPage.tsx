@@ -42,6 +42,8 @@ interface Organization {
   address?: string;
   contactEmail?: string;
   contactPhone?: string;
+  pib?: string;
+  pdv?: string;
   isActive?: boolean;
   createdAt?: string;
 }
@@ -63,9 +65,11 @@ export default function OrganizationsPage() {
     address: "",
     contactEmail: "",
     contactPhone: "",
+    pib: "",
+    pdv: "",
   });
 
-  // Form state for admin user
+  // Form state for admin user (used in combined form)
   const [adminFormData, setAdminFormData] = useState({
     username: "",
     password: "",
@@ -89,13 +93,14 @@ export default function OrganizationsPage() {
   });
 
   const createOrgMutation = useMutation({
-    mutationFn: async (orgData: any) => {
-      return await apiRequest("POST", "/api/organizations", orgData);
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/organizations", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/organizations"] });
-      toast({ description: "Organizacija uspješno kreirana" });
-      resetOrgForm();
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({ description: "Organizacija i admin uspješno kreirani" });
+      resetAllForms();
       setIsAddOrgOpen(false);
     },
     onError: (error: any) => {
@@ -167,6 +172,8 @@ export default function OrganizationsPage() {
       address: "",
       contactEmail: "",
       contactPhone: "",
+      pib: "",
+      pdv: "",
     });
   };
 
@@ -179,8 +186,17 @@ export default function OrganizationsPage() {
     });
   };
 
+  const resetAllForms = () => {
+    resetOrgForm();
+    resetAdminForm();
+  };
+
   const handleAddOrg = () => {
-    createOrgMutation.mutate(orgFormData);
+    // Create organization with admin in one request
+    createOrgMutation.mutate({
+      organization: orgFormData,
+      admin: adminFormData.username ? adminFormData : null,
+    });
   };
 
   const handleEditOrg = () => {
@@ -204,6 +220,8 @@ export default function OrganizationsPage() {
       address: org.address || "",
       contactEmail: org.contactEmail || "",
       contactPhone: org.contactPhone || "",
+      pib: org.pib || "",
+      pdv: org.pdv || "",
     });
     setIsEditOrgOpen(true);
   };
@@ -237,69 +255,157 @@ export default function OrganizationsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-bold">Organizacije</h2>
-          <Dialog open={isAddOrgOpen} onOpenChange={setIsAddOrgOpen}>
+          <Dialog open={isAddOrgOpen} onOpenChange={(open) => { setIsAddOrgOpen(open); if (!open) resetAllForms(); }}>
             <DialogTrigger asChild>
               <Button>
                 <Building2 className="h-4 w-4 mr-2" />
                 Nova organizacija
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Nova organizacija</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="org-name">Naziv *</Label>
-                  <Input
-                    id="org-name"
-                    value={orgFormData.name}
-                    onChange={(e) =>
-                      setOrgFormData({ ...orgFormData, name: e.target.value })
-                    }
-                    placeholder="Unesite naziv organizacije"
-                  />
+              <div className="space-y-6 py-4">
+                {/* Organization Details */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Podaci o organizaciji</h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="org-name">Naziv firme *</Label>
+                      <Input
+                        id="org-name"
+                        value={orgFormData.name}
+                        onChange={(e) =>
+                          setOrgFormData({ ...orgFormData, name: e.target.value })
+                        }
+                        placeholder="npr. Servis Marković d.o.o."
+                      />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="org-address">Adresa</Label>
+                      <Input
+                        id="org-address"
+                        value={orgFormData.address}
+                        onChange={(e) =>
+                          setOrgFormData({ ...orgFormData, address: e.target.value })
+                        }
+                        placeholder="Ulica i broj, grad"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="org-email">Email</Label>
+                      <Input
+                        id="org-email"
+                        type="email"
+                        value={orgFormData.contactEmail}
+                        onChange={(e) =>
+                          setOrgFormData({ ...orgFormData, contactEmail: e.target.value })
+                        }
+                        placeholder="info@firma.com"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="org-phone">Telefon</Label>
+                      <Input
+                        id="org-phone"
+                        value={orgFormData.contactPhone}
+                        onChange={(e) =>
+                          setOrgFormData({ ...orgFormData, contactPhone: e.target.value })
+                        }
+                        placeholder="+382 69 123 456"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="org-pib">PIB</Label>
+                      <Input
+                        id="org-pib"
+                        value={orgFormData.pib}
+                        onChange={(e) =>
+                          setOrgFormData({ ...orgFormData, pib: e.target.value })
+                        }
+                        placeholder="12345678"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="org-pdv">PDV broj</Label>
+                      <Input
+                        id="org-pdv"
+                        value={orgFormData.pdv}
+                        onChange={(e) =>
+                          setOrgFormData({ ...orgFormData, pdv: e.target.value })
+                        }
+                        placeholder="ME12345678"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="org-address">Adresa</Label>
-                  <Input
-                    id="org-address"
-                    value={orgFormData.address}
-                    onChange={(e) =>
-                      setOrgFormData({ ...orgFormData, address: e.target.value })
-                    }
-                    placeholder="Unesite adresu"
-                  />
+
+                {/* Admin User Details */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Administrator organizacije</h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-username">Korisničko ime *</Label>
+                      <Input
+                        id="admin-username"
+                        value={adminFormData.username}
+                        onChange={(e) =>
+                          setAdminFormData({ ...adminFormData, username: e.target.value })
+                        }
+                        placeholder="marko.admin"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-password">Lozinka *</Label>
+                      <Input
+                        id="admin-password"
+                        type="password"
+                        value={adminFormData.password}
+                        onChange={(e) =>
+                          setAdminFormData({ ...adminFormData, password: e.target.value })
+                        }
+                        placeholder="Minimalno 6 karaktera"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-fullName">Ime i prezime *</Label>
+                      <Input
+                        id="admin-fullName"
+                        value={adminFormData.fullName}
+                        onChange={(e) =>
+                          setAdminFormData({ ...adminFormData, fullName: e.target.value })
+                        }
+                        placeholder="Marko Marković"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-email">Email</Label>
+                      <Input
+                        id="admin-email"
+                        type="email"
+                        value={adminFormData.email}
+                        onChange={(e) =>
+                          setAdminFormData({ ...adminFormData, email: e.target.value })
+                        }
+                        placeholder="marko@firma.com"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="org-email">Email</Label>
-                  <Input
-                    id="org-email"
-                    type="email"
-                    value={orgFormData.contactEmail}
-                    onChange={(e) =>
-                      setOrgFormData({ ...orgFormData, contactEmail: e.target.value })
-                    }
-                    placeholder="Unesite email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="org-phone">Telefon</Label>
-                  <Input
-                    id="org-phone"
-                    value={orgFormData.contactPhone}
-                    onChange={(e) =>
-                      setOrgFormData({ ...orgFormData, contactPhone: e.target.value })
-                    }
-                    placeholder="Unesite telefon"
-                  />
-                </div>
+
                 <Button
                   onClick={handleAddOrg}
                   className="w-full"
-                  disabled={!orgFormData.name || createOrgMutation.isPending}
+                  disabled={
+                    !orgFormData.name ||
+                    !adminFormData.username ||
+                    !adminFormData.password ||
+                    !adminFormData.fullName ||
+                    createOrgMutation.isPending
+                  }
                 >
-                  {createOrgMutation.isPending ? "Kreiranje..." : "Kreiraj organizaciju"}
+                  {createOrgMutation.isPending ? "Kreiranje..." : "Kreiraj organizaciju i admina"}
                 </Button>
               </div>
             </DialogContent>
@@ -332,9 +438,9 @@ export default function OrganizationsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Naziv</TableHead>
-                  <TableHead>Adresa</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Telefon</TableHead>
+                  <TableHead>Email / Telefon</TableHead>
+                  <TableHead>PIB</TableHead>
+                  <TableHead>PDV</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Akcije</TableHead>
                 </TableRow>
@@ -342,10 +448,21 @@ export default function OrganizationsPage() {
               <TableBody>
                 {filteredOrganizations.map((org) => (
                   <TableRow key={org.id}>
-                    <TableCell className="font-medium">{org.name}</TableCell>
-                    <TableCell>{org.address || "-"}</TableCell>
-                    <TableCell>{org.contactEmail || "-"}</TableCell>
-                    <TableCell>{org.contactPhone || "-"}</TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{org.name}</p>
+                        {org.address && <p className="text-xs text-muted-foreground">{org.address}</p>}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        {org.contactEmail && <p>{org.contactEmail}</p>}
+                        {org.contactPhone && <p className="text-muted-foreground">{org.contactPhone}</p>}
+                        {!org.contactEmail && !org.contactPhone && "-"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-mono text-sm">{org.pib || "-"}</TableCell>
+                    <TableCell className="font-mono text-sm">{org.pdv || "-"}</TableCell>
                     <TableCell>
                       <Badge variant={org.isActive !== false ? "default" : "secondary"}>
                         {org.isActive !== false ? "Aktivna" : "Neaktivna"}
@@ -393,55 +510,79 @@ export default function OrganizationsPage() {
 
         {/* Edit Organization Dialog */}
         <Dialog open={isEditOrgOpen} onOpenChange={setIsEditOrgOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-xl">
             <DialogHeader>
               <DialogTitle>Uredi organizaciju</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-org-name">Naziv *</Label>
-                <Input
-                  id="edit-org-name"
-                  value={orgFormData.name}
-                  onChange={(e) =>
-                    setOrgFormData({ ...orgFormData, name: e.target.value })
-                  }
-                  placeholder="Unesite naziv organizacije"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-org-address">Adresa</Label>
-                <Input
-                  id="edit-org-address"
-                  value={orgFormData.address}
-                  onChange={(e) =>
-                    setOrgFormData({ ...orgFormData, address: e.target.value })
-                  }
-                  placeholder="Unesite adresu"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-org-email">Email</Label>
-                <Input
-                  id="edit-org-email"
-                  type="email"
-                  value={orgFormData.contactEmail}
-                  onChange={(e) =>
-                    setOrgFormData({ ...orgFormData, contactEmail: e.target.value })
-                  }
-                  placeholder="Unesite email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-org-phone">Telefon</Label>
-                <Input
-                  id="edit-org-phone"
-                  value={orgFormData.contactPhone}
-                  onChange={(e) =>
-                    setOrgFormData({ ...orgFormData, contactPhone: e.target.value })
-                  }
-                  placeholder="Unesite telefon"
-                />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="edit-org-name">Naziv *</Label>
+                  <Input
+                    id="edit-org-name"
+                    value={orgFormData.name}
+                    onChange={(e) =>
+                      setOrgFormData({ ...orgFormData, name: e.target.value })
+                    }
+                    placeholder="Unesite naziv organizacije"
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="edit-org-address">Adresa</Label>
+                  <Input
+                    id="edit-org-address"
+                    value={orgFormData.address}
+                    onChange={(e) =>
+                      setOrgFormData({ ...orgFormData, address: e.target.value })
+                    }
+                    placeholder="Unesite adresu"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-org-email">Email</Label>
+                  <Input
+                    id="edit-org-email"
+                    type="email"
+                    value={orgFormData.contactEmail}
+                    onChange={(e) =>
+                      setOrgFormData({ ...orgFormData, contactEmail: e.target.value })
+                    }
+                    placeholder="Unesite email"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-org-phone">Telefon</Label>
+                  <Input
+                    id="edit-org-phone"
+                    value={orgFormData.contactPhone}
+                    onChange={(e) =>
+                      setOrgFormData({ ...orgFormData, contactPhone: e.target.value })
+                    }
+                    placeholder="Unesite telefon"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-org-pib">PIB</Label>
+                  <Input
+                    id="edit-org-pib"
+                    value={orgFormData.pib}
+                    onChange={(e) =>
+                      setOrgFormData({ ...orgFormData, pib: e.target.value })
+                    }
+                    placeholder="12345678"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-org-pdv">PDV broj</Label>
+                  <Input
+                    id="edit-org-pdv"
+                    value={orgFormData.pdv}
+                    onChange={(e) =>
+                      setOrgFormData({ ...orgFormData, pdv: e.target.value })
+                    }
+                    placeholder="ME12345678"
+                  />
+                </div>
               </div>
               <Button
                 onClick={handleEditOrg}

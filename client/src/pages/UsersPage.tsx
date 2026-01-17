@@ -54,6 +54,7 @@ interface User {
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
+  const isSuperAdmin = currentUser?.userRole === "super_admin";
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
@@ -170,7 +171,12 @@ export default function UsersPage() {
     setIsEditUserOpen(true);
   };
 
-  const filteredUsers = users.filter(
+  // Filter users: org_admin should not see super_admin users
+  const visibleUsers = isSuperAdmin
+    ? users
+    : users.filter(user => user.userRole !== 'super_admin');
+
+  const filteredUsers = visibleUsers.filter(
     (user) =>
       user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -198,8 +204,6 @@ export default function UsersPage() {
         return "Tehničar";
     }
   };
-
-  const isSuperAdmin = currentUser?.userRole === "super_admin";
 
   return (
     <AppLayout title="Korisnici">

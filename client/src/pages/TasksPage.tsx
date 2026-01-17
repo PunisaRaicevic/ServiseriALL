@@ -49,7 +49,7 @@ export default function TasksPage() {
   });
   
   const { data: users = [] } = useQuery<User[]>({
-    queryKey: ["/api/users"],
+    queryKey: ["/api/technicians"],
   });
   
   const { data: tasks = [], isLoading } = useQuery<Task[]>({

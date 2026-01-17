@@ -242,11 +242,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create organization (super_admin only)
   app.post("/api/organizations", requireSuperAdmin, async (req, res) => {
     try {
-      const validatedData = insertOrganizationSchema.parse(req.body);
-      const org = await storage.createOrganization(validatedData);
-      res.status(201).json(org);
+      const { organization, admin } = req.body;
+
+      // If combined request (organization + admin)
+      if (organization) {
+        // Validate required fields
+        if (!organization.name) {
+          return res.status(400).json({ message: "Naziv organizacije je obavezan" });
+        }
+
+        // Create organization
+        const orgData = {
+          name: organization.name,
+          address: organization.address || null,
+          contactEmail: organization.contactEmail || null,
+          contactPhone: organization.contactPhone || null,
+          pib: organization.pib || null,
+          pdv: organization.pdv || null,
+        };
+        const org = await storage.createOrganization(orgData);
+
+        // Create admin user for the organization if provided
+        if (admin && admin.username && admin.password && admin.fullName) {
+          const passwordHash = await hashPassword(admin.password);
+          const adminData = {
+            username: admin.username,
+            passwordHash,
+            fullName: admin.fullName,
+            email: admin.email || null,
+            userRole: 'org_admin',
+            organizationId: org.id,
+          };
+          await storage.createUser(adminData);
+        }
+
+        res.status(201).json(org);
+      } else {
+        // Legacy: just organization data at root level
+        const validatedData = insertOrganizationSchema.parse(req.body);
+        const org = await storage.createOrganization(validatedData);
+        res.status(201).json(org);
+      }
     } catch (error: any) {
-      res.status(400).json({ message: error.message });
+      console.error('Create organization error:', error);
+      res.status(400).json({ message: error.message || "Greška pri kreiranju organizacije" });
     }
   });
 
@@ -278,6 +317,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ==================== USERS/PROFILES ====================
 
+  // Get technicians for task assignment (accessible by all org users)
+  app.get("/api/technicians", requireOrg, async (req, res) => {
+    const users = await storage.getAllUsers(req.session.organizationId);
+    // Return all users except super_admin (org_admin and technicians can be assigned tasks)
+    const assignableUsers = users.filter(u => u.userRole !== 'super_admin');
+    res.json(assignableUsers);
+  });
+
   // Get users (org_admin sees their org users, super_admin sees all or filtered)
   app.get("/api/users", requireOrgAdmin, async (req, res) => {
     if (req.session.userRole === 'super_admin') {
@@ -286,9 +333,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const users = await storage.getAllUsers(orgId);
       res.json(users);
     } else {
-      // Org admin sees only their org users
+      // Org admin sees only their org users, excluding super_admin
       const users = await storage.getAllUsers(req.session.organizationId);
-      res.json(users);
+      const filteredUsers = users.filter(u => u.userRole !== 'super_admin');
+      res.json(filteredUsers);
     }
   });
 

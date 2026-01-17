@@ -10,6 +10,8 @@ export const organizations = pgTable("organizations", {
   address: varchar("address"),
   contactEmail: varchar("contact_email"),
   contactPhone: varchar("contact_phone"),
+  pib: varchar("pib"), // Tax ID
+  pdv: varchar("pdv"), // VAT number
   logo: varchar("logo"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),

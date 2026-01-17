@@ -35,14 +35,16 @@ app.use((req, res, next) => {
   next();
 });
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-this',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
-    secure: true, // Required for SameSite=None
+  cookie: {
+    secure: isProduction, // true for HTTPS in production, false for localhost
     httpOnly: true,
-    sameSite: 'none', // Required for cross-origin cookies (mobile app)
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-origin in production, 'lax' for localhost
     maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
   }
 }));
