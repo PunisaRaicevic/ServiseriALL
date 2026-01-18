@@ -17,6 +17,7 @@
     "@capacitor/android": "^7.4.4",
     "@capacitor/cli": "^7.4.4",
     "@capacitor/core": "^7.4.4",
+    "@capacitor/filesystem": "^6.0.4",
     "@hookform/resolvers": "^3.10.0",
     "@ionic/cli": "^7.2.1",
     "@jridgewell/trace-mapping": "^0.3.25",
@@ -96,7 +97,6 @@
     "zod-validation-error": "^3.4.0"
   },
   "devDependencies": {
-    "@vercel/node": "^3.0.0",
     "@replit/vite-plugin-cartographer": "^0.4.3",
     "@replit/vite-plugin-dev-banner": "^0.1.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
@@ -112,6 +112,7 @@
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@types/ws": "^8.5.13",
+    "@vercel/node": "^3.0.0",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.20",
     "drizzle-kit": "^0.31.4",

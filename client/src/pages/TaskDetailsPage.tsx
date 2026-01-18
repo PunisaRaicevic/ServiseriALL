@@ -26,6 +26,8 @@ import { getRecurrencePatternLabel, type RecurrencePattern } from "@/lib/recurri
 import type { Task, Client, Appliance, Report } from "@shared/schema";
 import { queryClient, apiRequest, HttpError } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
 
 export default function TaskDetailsPage() {
   const t = useTranslation();
@@ -42,27 +44,74 @@ export default function TaskDetailsPage() {
 
   const handleDownloadPdf = async () => {
     if (!report) return;
-    
+
     setIsDownloadingPdf(true);
     try {
-      const response = await fetch(`/api/reports/${report.id}/pdf`);
+      // Use full API URL for mobile
+      const apiUrl = Capacitor.isNativePlatform()
+        ? 'https://serviseri-8ffl.vercel.app'
+        : '';
+
+      const response = await fetch(`${apiUrl}/api/reports/${report.id}/pdf`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error('Failed to generate PDF');
       }
-      
+
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `izvjestaj-${report.id.slice(0, 8)}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast({
-        description: t.reports.pdfDownloaded || 'PDF uspješno preuzet',
-      });
+      const fileName = `izvjestaj-${report.id.slice(0, 8)}.pdf`;
+
+      // Check if running in Capacitor (mobile app)
+      if (Capacitor.isNativePlatform()) {
+        // Convert blob to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+          const base64data = reader.result as string;
+          const base64 = base64data.split(',')[1];
+
+          try {
+            // Save to Downloads directory
+            const result = await Filesystem.writeFile({
+              path: fileName,
+              data: base64,
+              directory: Directory.Documents,
+            });
+
+            toast({
+              description: `PDF sačuvan: ${fileName}`,
+            });
+
+            // Try to open the file using the device's default PDF viewer
+            const fileUri = result.uri;
+            if (fileUri) {
+              // Open file with system viewer
+              window.open(fileUri, '_system');
+            }
+          } catch (err) {
+            console.error('Error saving PDF:', err);
+            toast({
+              description: t.reports.pdfError || 'Greška pri čuvanju PDF-a',
+              variant: "destructive",
+            });
+          }
+        };
+      } else {
+        // Web browser download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast({
+          description: t.reports.pdfDownloaded || 'PDF uspješno preuzet',
+        });
+      }
     } catch (error) {
       toast({
         description: t.reports.pdfError || 'Greška pri generisanju PDF-a',
