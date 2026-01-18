@@ -222,33 +222,38 @@ export function AppSidebar() {
       </SidebarContent>
 
       {/* User Profile Footer */}
-      <SidebarFooter className="bg-sidebar border-t border-sidebar-border p-2">
+      <SidebarFooter className="bg-sidebar border-t border-sidebar-border p-2 pb-safe">
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex items-center gap-2 px-3 py-2">
-              <Avatar className="h-9 w-9 rounded-lg bg-gradient-primary shadow-md">
-                <AvatarFallback className="bg-transparent text-white font-semibold text-sm">
-                  {getUserInitials()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {user?.fullName || user?.username}
-                </span>
-                <span className="truncate text-xs text-muted-foreground">
-                  {getRoleLabel()}
-                </span>
-              </div>
-            </div>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={handleLogout}
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-            >
-              <LogOut className="h-5 w-5" />
-              <span className="font-medium">{t.auth.logout}</span>
-            </SidebarMenuButton>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-sidebar-accent transition-colors">
+                  <Avatar className="h-9 w-9 rounded-lg bg-gradient-primary shadow-md">
+                    <AvatarFallback className="bg-transparent text-white font-semibold text-sm">
+                      {getUserInitials()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">
+                      {user?.fullName || user?.username}
+                    </span>
+                    <span className="truncate text-xs text-muted-foreground">
+                      {getRoleLabel()}
+                    </span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" className="w-56 mb-2">
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  {t.auth.logout}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

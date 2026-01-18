@@ -290,6 +290,11 @@
  */
 @layer utilities {
 
+  /* Safe area padding for mobile devices (iPhone notch/home indicator) */
+  .pb-safe {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
   /* Gradient utilities */
   .bg-gradient-primary {
     background: linear-gradient(135deg, hsl(var(--primary-gradient-from)), hsl(var(--primary-gradient-to)));
