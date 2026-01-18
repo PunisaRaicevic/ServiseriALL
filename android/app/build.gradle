@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "me.budva.tehniko"
+    namespace "me.budva.tehnikomulti"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "me.budva.tehniko"
+        applicationId "me.budva.tehniko.multi"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

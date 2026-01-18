@@ -1,4 +1,4 @@
-package me.budva.tehniko;
+package me.budva.tehnikomulti;
 
 import com.getcapacitor.BridgeActivity;
 
