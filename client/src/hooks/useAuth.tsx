@@ -22,9 +22,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: user = null, isLoading } = useQuery<User | null>({
     queryKey: ["/api/user/me"],
     retry: false,
-    refetchOnMount: "always",
-    refetchOnWindowFocus: true,
-    staleTime: 0,
+    refetchOnMount: false,  // Don't refetch - use data set from login
+    refetchOnWindowFocus: false,  // Don't refetch on focus - session may not be ready
+    staleTime: Infinity,  // Data never goes stale automatically
   });
 
   return (
