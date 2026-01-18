@@ -1,6 +1,6 @@
 {
-  "appId": "me.budva.tehniko",
-  "appName": "Tehniko System",
+  "appId": "me.budva.tehniko.multi",
+  "appName": "Tehniko Multi",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"
